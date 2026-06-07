@@ -379,7 +379,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
   }, []);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="absolute inset-0 w-full h-full">
       {/* CSS Dotted Grid Container */}
       <div 
         ref={sceneRef} 
