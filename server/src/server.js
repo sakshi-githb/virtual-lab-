@@ -4,9 +4,13 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth.js';
+import connectDB from './config/db.js';
 
 // Load environmental variables
 dotenv.config();
+
+// Connect to MongoDB Database
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

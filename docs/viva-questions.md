@@ -19,3 +19,12 @@ This guide contains key engineering questions frequently asked during academic p
 
 ### Q4: Why use WebSockets instead of HTTP polling for multiplayer?
 *   **Answer**: HTTP is unidirectional; the client must constantly send requests to check if there are changes. WebSockets establish a **persistent, bidirectional connection**. Once opened, the client and server can transmit data packets back and forth with near-zero latency, which is required for smooth, real-time collaboration.
+
+### Q5: What is the difference between `mongodb+srv://` and standard `mongodb://` connection strings, and how do you troubleshoot the `querySrv ECONNREFUSED` error?
+*   **Answer**: 
+    *   `mongodb+srv://` is a modern, simplified connection string format. It queries the Domain Name System (DNS) for **SRV records** (Service records) to automatically discover the database shard hosts and parameters (such as the replica set name). This avoids hardcoding hostnames.
+    *   `mongodb://` is the standard connection string format where you explicitly list all shard hosts, ports, and replica set options (e.g., `replicaSet=atlas-l79ctx-shard-0&authSource=admin`).
+    *   **Troubleshooting `querySrv ECONNREFUSED`**: This error occurs when the local DNS resolver (e.g., from an ISP or router) blocks or refuses DNS SRV queries. To fix this, you can either:
+        1. Query SRV and TXT records using a public DNS resolver (like Google's `8.8.8.8`) to discover the shard hosts and replica set name, and then construct a standard `mongodb://` connection string.
+        2. Set the Node.js process DNS servers to Google's public DNS using `dns.setServers(['8.8.8.8'])` before running database connection logic.
+

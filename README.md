@@ -49,7 +49,7 @@ virtual-lab/
 
 ### Prerequisites
 *   [Node.js](https://nodejs.org/) (v16+ recommended)
-*   [MongoDB](https://www.mongodb.com/try/download/community) installed and running locally.
+*   **Database**: Either a local installation of [MongoDB Community Server](https://www.mongodb.com/try/download/community) (running on port `27017`) or a [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cloud database cluster.
 
 ### 1. Setup the Backend API Server
 1.  Navigate to the server directory:
@@ -64,11 +64,22 @@ virtual-lab/
     ```bash
     cp .env.example .env
     ```
+    Open `.env` and set `MONGODB_URI` according to your database configuration:
+    *   **Local MongoDB**: `mongodb://127.0.0.1:27017/virtual-lab`
+    *   **Cloud MongoDB Atlas (Standard)**: `mongodb+srv://<username>:<password>@cluster0.ydh87r9.mongodb.net/virtual_lab`
+    *   **Cloud MongoDB Atlas (Fallback for DNS SRV Blocked Networks)**: If your network ISP blocks SRV lookup records (resulting in a `querySrv ECONNREFUSED` error), connect directly to the replica set shards:
+        ```env
+        MONGODB_URI=mongodb://<username>:<password>@ac-penaw4r-shard-00-00.ydh87r9.mongodb.net:27017,ac-penaw4r-shard-00-01.ydh87r9.mongodb.net:27017,ac-penaw4r-shard-00-02.ydh87r9.mongodb.net:27017/virtual_lab?ssl=true&replicaSet=atlas-l79ctx-shard-0&authSource=admin
+        ```
 4.  Launch the hot-reload development server:
     ```bash
     npm run dev
     ```
-    The server will start at `http://localhost:5000/`.
+    The server will start at `http://localhost:5000/`. On startup, it will attempt to connect to MongoDB and print:
+    ```
+    🔌 MongoDB Database Connected successfully!
+    ```
+
 
 ### 2. Setup the Client Application
 1.  Navigate to the client directory:
