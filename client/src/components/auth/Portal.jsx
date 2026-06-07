@@ -11,6 +11,7 @@ import {
 const Portal = ({ onEnterWorkspace }) => {
   const [labMode, setLabMode] = useState('solo'); // 'solo' | 'collaborative'
   const [authMethod, setAuthMethod] = useState('guest'); // 'guest' | 'login' | 'register'
+  const [roomToJoin, setRoomToJoin] = useState('');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -18,7 +19,7 @@ const Portal = ({ onEnterWorkspace }) => {
     password: ''
   });
   const [errorMsg, setErrorMsg] = useState('');
-
+ 
   const handleInputChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -26,11 +27,11 @@ const Portal = ({ onEnterWorkspace }) => {
     }));
     setErrorMsg('');
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-
+ 
     // Guest Auth
     if (authMethod === 'guest') {
       if (!formData.name.trim()) {
@@ -39,11 +40,12 @@ const Portal = ({ onEnterWorkspace }) => {
       }
       onEnterWorkspace({
         user: { name: formData.name, role: 'guest' },
-        labMode
+        labMode,
+        roomToJoin
       });
       return;
     }
-
+ 
     // Registered Member Auth
     if (!formData.email.trim() || !formData.password.trim()) {
       setErrorMsg('Please enter credentials.');
@@ -54,30 +56,30 @@ const Portal = ({ onEnterWorkspace }) => {
       setErrorMsg('Name is required to register.');
       return;
     }
-
+ 
     try {
       const endpoint = authMethod === 'register' ? '/api/auth/register' : '/api/auth/login';
       const bodyPayload = authMethod === 'register'
         ? { name: formData.name, email: formData.email, password: formData.password }
         : { email: formData.email, password: formData.password };
-
+ 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPayload)
       });
-
+ 
       const data = await response.json();
-
+ 
       if (!response.ok) {
         throw new Error(data.message || 'Authentication failed');
       }
-
+ 
       // Save token in localStorage
       if (data.token) {
         localStorage.setItem('token', data.token);
       }
-
+ 
       onEnterWorkspace({
         user: { 
           id: data.user.id,
@@ -85,12 +87,14 @@ const Portal = ({ onEnterWorkspace }) => {
           email: data.user.email,
           role: 'member' 
         },
-        labMode
+        labMode,
+        roomToJoin
       });
     } catch (error) {
       setErrorMsg(error.message || 'Server connection error');
     }
   };
+
 
 
   return (
@@ -293,6 +297,18 @@ const Portal = ({ onEnterWorkspace }) => {
                       />
                     </div>
                   </>
+                )}
+                {labMode === 'collaborative' && (
+                  <div className="flex flex-col gap-1 border-t-2 border-dashed border-charcoal/20 pt-2.5 mt-2">
+                    <label className="text-[10px] font-bold uppercase text-charcoal/60">Classroom Code (Optional)</label>
+                    <input
+                      type="text"
+                      value={roomToJoin}
+                      onChange={(e) => setRoomToJoin(e.target.value.toUpperCase())}
+                      placeholder="e.g. ABC123 (Leave blank to Host)"
+                      className="border-3 border-charcoal px-3 py-1.5 bg-cream font-bold text-xs focus:outline-none focus:bg-white uppercase"
+                    />
+                  </div>
                 )}
               </div>
             </div>

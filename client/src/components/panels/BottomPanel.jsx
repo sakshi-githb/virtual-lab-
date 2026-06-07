@@ -1,36 +1,38 @@
 import React, { useState } from 'react';
-import { Users, Send, MessageSquare } from 'lucide-react';
+import { Send } from 'lucide-react';
+import { useSocket } from '../../context/SocketContext';
 
 const BottomPanel = () => {
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'Mike', text: "Let's try increasing the mass of the dynamic block.", time: '10:15 AM', color: 'bg-brutalBlue text-white' },
-    { id: 2, sender: 'Sepideh', text: "Good idea! That will let us test friction values properly.", time: '10:16 AM', color: 'bg-brutalGreen text-white' },
-    { id: 3, sender: 'Sam', text: "I'll adjust the spring friction slider on the right panel.", time: '10:16 AM', color: 'bg-brutalYellow text-charcoal' }
-  ]);
+  const { users, messages, sendChatMessage } = useSocket();
   const [inputText, setInputText] = useState('');
-
-  const activePlayers = [
-    { name: 'Mike', initial: 'MK', color: 'bg-brutalBlue' },
-    { name: 'Sepideh', initial: 'SP', color: 'bg-brutalGreen' },
-    { name: 'Sam', initial: 'SM', color: 'bg-brutalYellow' },
-    { name: 'Newton', initial: 'NW', color: 'bg-brutalRed' }
-  ];
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    setMessages(prev => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        sender: 'You',
-        text: inputText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        color: 'bg-charcoal text-white'
-      }
-    ]);
+    sendChatMessage(inputText);
     setInputText('');
+  };
+
+  // Helper to assign a color block to users based on username hash
+  const getUserColor = (username) => {
+    if (username === 'SYSTEM') return 'bg-charcoal text-brutalYellow';
+    const colors = [
+      'bg-brutalBlue text-white',
+      'bg-brutalGreen text-white',
+      'bg-brutalYellow text-charcoal',
+      'bg-brutalRed text-white'
+    ];
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  // Helper to extract initials
+  const getInitials = (username) => {
+    return username.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -40,22 +42,23 @@ const BottomPanel = () => {
       <div className="card-brutal bg-white p-4 w-full md:w-60 h-20 md:h-full flex flex-col justify-center relative pt-8 md:pt-10 flex-shrink-0">
         {/* Mockup Yellow Header Ribbon */}
         <div className="absolute top-0 left-0 bg-brutalYellow text-charcoal border-r-3 border-b-3 border-charcoal px-3 py-1 font-extrabold text-[11px] uppercase tracking-widest leading-none select-none">
-          👥 Players
+          👥 Players ({users.length})
         </div>
         
-        <div className="flex items-center gap-2 flex-wrap">
-          {activePlayers.map((p) => (
-            <div
-              key={p.name}
-              className={`w-9 h-9 rounded-full ${p.color} border-3 border-charcoal flex items-center justify-center font-extrabold text-xs shadow-brutal-sm hover:-translate-y-0.5 transition-transform cursor-pointer`}
-              title={`${p.name} - Online`}
-            >
-              {p.initial}
-            </div>
-          ))}
-          <button className="w-9 h-9 rounded-full bg-white border-3 border-charcoal flex items-center justify-center font-bold text-lg shadow-brutal-sm hover:-translate-y-0.5 hover:bg-neutral-50 transition-transform cursor-pointer">
-            +
-          </button>
+        <div className="flex items-center gap-2 flex-wrap overflow-y-auto max-h-full py-1">
+          {users.map((u, index) => {
+            const initial = getInitials(u.username);
+            const colorClass = getUserColor(u.username);
+            return (
+              <div
+                key={u.socketId || index}
+                className={`w-9 h-9 rounded-full ${colorClass.split(' ')[0]} border-3 border-charcoal flex items-center justify-center font-extrabold text-xs shadow-brutal-sm hover:-translate-y-0.5 transition-transform cursor-pointer`}
+                title={`${u.username} - Online`}
+              >
+                {initial}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -68,19 +71,31 @@ const BottomPanel = () => {
 
         {/* Scrollable messages box */}
         <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-1 font-sans text-xs min-h-0 mb-2">
-          {messages.map((m) => (
-            <div key={m.id} className="flex justify-between items-start gap-2 text-left">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className={`px-2 py-0.5 border-2 border-charcoal font-extrabold text-[9px] uppercase flex-shrink-0 ${m.color}`}>
-                  {m.sender}
-                </span>
-                <span className="font-semibold text-charcoal/80 leading-snug truncate">{m.text}</span>
-              </div>
-              <span className="text-[8px] font-bold text-charcoal/40 font-mono flex-shrink-0 mt-0.5">
-                {m.time}
-              </span>
+          {messages.length === 0 ? (
+            <div className="text-charcoal/40 font-bold italic py-2 text-center">
+              No messages in workspace. Start collaboration chat!
             </div>
-          ))}
+          ) : (
+            messages.map((m) => {
+              const colorClass = getUserColor(m.username);
+              const timeString = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              return (
+                <div key={m.id} className="flex justify-between items-start gap-2 text-left">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className={`px-2 py-0.5 border-2 border-charcoal font-extrabold text-[9px] uppercase flex-shrink-0 ${colorClass}`}>
+                      {m.username}
+                    </span>
+                    <span className={`font-semibold leading-snug truncate ${m.isSystem ? 'text-charcoal/50 italic' : 'text-charcoal/80'}`}>
+                      {m.text}
+                    </span>
+                  </div>
+                  <span className="text-[8px] font-bold text-charcoal/40 font-mono flex-shrink-0 mt-0.5">
+                    {timeString}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Chat input line */}
@@ -105,5 +120,5 @@ const BottomPanel = () => {
     </div>
   );
 };
-
 export default BottomPanel;
+

@@ -36,5 +36,12 @@ This document details key engineering tradeoffs, challenges, and lessons learned
 *   **Takeaway**: Real-time room features easily cause memory leaks on the backend if socket registries retain records for disconnected sockets, or if empty rooms are left allocated in RAM indefinitely.
 *   **Resolution**: Implemented automatic garbage collection (GC) inside `socketManager.js`. Whenever a client leaves a room or disconnects, they are cleanly deregistered. If the room's occupant count hits zero, the room configuration is deleted from the `rooms` Map registry, preventing server RAM leaks.
 
+---
+
+## 7. React Socket.io Context and Declarative State Sync
+*   **Takeaway**: Directly instantiating socket listeners inside individual UI panels leads to duplicate connections and redundant event handlers.
+*   **Resolution**: Implemented a centralized `SocketProvider` context. This hoists the socket instance to the root of the React application, ensuring a single connection channel. Sub-components like `BottomPanel` (chat/players list) or `TopBar` consume this context declaratively.
+
+
 
 

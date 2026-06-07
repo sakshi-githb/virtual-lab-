@@ -43,5 +43,12 @@ This guide contains key engineering questions frequently asked during academic p
         2. **Action Sync vs. State Sync**: We only sync the full coordinate state of active physics bodies at 30Hz. Single events like spawning an object, clicking reset, or changing gravity are sent once as discrete actions (`physics:action`) rather than continuous streams.
         3. **Garbage Collection**: Sockets automatically clean up their memory by leaving rooms on disconnect, and rooms are deleted from server memory immediately when the last user exits.
 
+### Q8: What are the benefits of wrapping a WebSocket connection inside a React Context Provider?
+*   **Answer**: 
+    *   **Single Connection Instance**: React Context guarantees that the WebSocket connection is initialized once and shared across the entire application, avoiding multiple parallel connections from different components.
+    *   **Global Access**: Any child component in the component tree can consume the socket context (e.g., calling `const { roomCode } = useSocket()`) without having to prop-drill connection objects down through multiple layout layers.
+    *   **Synchronized React State**: The context translates raw socket events (like `peer:joined` or `chat:message`) into standard React state updates, causing consuming components to re-render reactively when new data arrives.
+
+
 
 

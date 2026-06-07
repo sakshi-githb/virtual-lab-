@@ -8,6 +8,7 @@ import NotebookPanel from './components/panels/NotebookPanel';
 import Portal from './components/auth/Portal';
 import AuthModal from './components/auth/AuthModal';
 import AIProf from './components/panels/AIProf';
+import { useSocket } from './context/SocketContext';
 import { 
   Save, 
   AlertCircle, 
@@ -20,6 +21,18 @@ import {
 function App() {
   const canvasRef = useRef(null);
   
+  // Consume Socket.io Collaboration Hooks
+  const { 
+    roomCode, 
+    createRoom, 
+    joinRoom, 
+    leaveRoom,
+    isHost,
+    users: socketUsers,
+    syncPhysicsState,
+    sendPhysicsAction
+  } = useSocket();
+
   // Platform Page Routing & Workspace Config
   const [currentPage, setCurrentPage] = useState('portal'); // 'portal' | 'workspace'
   const [labMode, setLabMode] = useState('solo'); // 'solo' | 'collaborative'
@@ -66,20 +79,40 @@ function App() {
   };
 
   // Portal Entrance Configuration
-  const handleEnterWorkspace = ({ user: authUser, labMode: chosenMode }) => {
+  const handleEnterWorkspace = ({ user: authUser, labMode: chosenMode, roomToJoin }) => {
     setUser(authUser);
     setLabMode(chosenMode);
-    setCurrentPage('workspace');
-    showNotification(`Workspace active. Welcome ${authUser.name}!`, 'success');
+    
+    if (chosenMode === 'collaborative') {
+      if (roomToJoin && roomToJoin.trim()) {
+        joinRoom(roomToJoin, authUser.name);
+      } else {
+        createRoom(authUser.name);
+      }
+    } else {
+      setCurrentPage('workspace');
+      showNotification(`Workspace active. Welcome ${authUser.name}!`, 'success');
+    }
   };
 
   const handleLogout = () => {
+    if (labMode === 'collaborative') {
+      leaveRoom();
+    }
     setUser(null);
     localStorage.removeItem('token');
     setCurrentPage('portal');
     setSelectedBody(null);
     showNotification('Logged out of experiment chamber.', 'success');
   };
+
+  // Sync route transition when room is joined
+  useEffect(() => {
+    if (labMode === 'collaborative' && roomCode) {
+      setCurrentPage('workspace');
+      showNotification(`Entered classroom room: ${roomCode}`, 'success');
+    }
+  }, [roomCode, labMode]);
 
   // Shape spawner delegation
   const handleSpawnShape = (shapeType) => {
@@ -182,14 +215,19 @@ function App() {
             onLoad={handleLoad}
             user={user}
             onOpenAuthModal={() => setIsAuthModalOpen(true)}
-            customRoomName={labMode === 'solo' ? 'Personal Lab' : "Newton's Den"}
+            customRoomName={labMode === 'solo' ? 'Personal Lab' : (roomCode ? `Room: ${roomCode}` : "Newton's Den")}
             customOnlineHud={
               labMode === 'solo' ? (
                 <div className="flex items-center gap-1.5 bg-neutral-200 text-charcoal border-2 border-charcoal px-2 py-0.5 text-xs font-bold rounded-none">
                   <span className="w-2.5 h-2.5 bg-charcoal border border-charcoal rounded-full inline-block" />
                   <span>Offline / Local</span>
                 </div>
-              ) : null
+              ) : (
+                <div className="flex items-center gap-1.5 bg-brutalGreen/20 text-emerald-800 border-2 border-charcoal px-2 py-0.5 text-xs font-bold rounded-none">
+                  <span className="w-2.5 h-2.5 bg-brutalGreen border border-charcoal rounded-full inline-block animate-pulse" />
+                  <span>{socketUsers.length} online</span>
+                </div>
+              )
             }
           />
         </div>
