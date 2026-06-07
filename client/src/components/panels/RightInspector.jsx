@@ -20,15 +20,18 @@ import {
 const RightInspector = ({ selectedBody, onUpdateProperty }) => {
   const [activeTab, setActiveTab] = useState('properties');
   const [velocityHistory, setVelocityHistory] = useState([]);
+  const [graphMetric, setGraphMetric] = useState('vx'); // 'vx' | 'dx' | 'speed'
   
   // Ref to throttle state updates for the charts
   const lastGraphUpdateRef = useRef(0);
   const bodyIdRef = useRef(null);
+  const startXRef = useRef(null);
 
   useEffect(() => {
     if (!selectedBody) {
       setVelocityHistory([]);
       bodyIdRef.current = null;
+      startXRef.current = null;
       return;
     }
 
@@ -36,6 +39,7 @@ const RightInspector = ({ selectedBody, onUpdateProperty }) => {
     if (bodyIdRef.current !== selectedBody.id) {
       bodyIdRef.current = selectedBody.id;
       setVelocityHistory([]);
+      startXRef.current = selectedBody.position.x;
     }
 
     const now = Date.now();
@@ -44,14 +48,18 @@ const RightInspector = ({ selectedBody, onUpdateProperty }) => {
       const vx = parseFloat(selectedBody.velocity.x) || 0;
       const vy = parseFloat(selectedBody.velocity.y) || 0;
       const speed = Math.sqrt(vx * vx + vy * vy);
+      const dx = selectedBody.position.x - (startXRef.current !== null ? startXRef.current : selectedBody.position.x);
 
       setVelocityHistory(prev => {
         const next = [...prev, { 
           time: new Date().toLocaleTimeString([], { second: '2-digit' }), 
-          speed: parseFloat(speed.toFixed(2)) 
+          speed: parseFloat(speed.toFixed(2)),
+          vx: parseFloat(vx.toFixed(2)),
+          vy: parseFloat(vy.toFixed(2)),
+          dx: parseFloat(dx.toFixed(2))
         }];
-        // Keep last 15 ticks of history
-        if (next.length > 15) {
+        // Keep last 25 ticks of history for a longer sequence
+        if (next.length > 25) {
           return next.slice(1);
         }
         return next;
@@ -242,12 +250,40 @@ const RightInspector = ({ selectedBody, onUpdateProperty }) => {
       </div>
 
       {/* VELOCITY REAL-TIME CHART CARD */}
-      <div className="card-brutal bg-white p-3 flex flex-col gap-2 relative pt-10 h-44">
+      <div className="card-brutal bg-white p-3 flex flex-col gap-2 relative pt-10 h-56">
         {/* Mockup Green Banner Header */}
         <div className="absolute top-0 left-0 bg-brutalGreen text-white border-r-3 border-b-3 border-charcoal px-3 py-1 font-extrabold text-[11px] uppercase tracking-widest leading-none select-none">
-          📈 Velocity
+          📈 Kinematics
         </div>
         
+        {/* Metric Selector Tabs */}
+        <div className="flex gap-1.5 text-[8px] font-bold font-mono border-b border-charcoal/20 pb-1.5 mt-2">
+          <button 
+            onClick={() => setGraphMetric('vx')} 
+            className={`px-1.5 py-0.5 border-2 border-charcoal transition-all ${
+              graphMetric === 'vx' ? 'bg-brutalRed text-white shadow-none translate-y-[1px]' : 'bg-white text-charcoal hover:-translate-y-[1px] cursor-pointer'
+            }`}
+          >
+            Velocity X (m/s)
+          </button>
+          <button 
+            onClick={() => setGraphMetric('dx')} 
+            className={`px-1.5 py-0.5 border-2 border-charcoal transition-all ${
+              graphMetric === 'dx' ? 'bg-brutalBlue text-white shadow-none translate-y-[1px]' : 'bg-white text-charcoal hover:-translate-y-[1px] cursor-pointer'
+            }`}
+          >
+            Displacement X (m)
+          </button>
+          <button 
+            onClick={() => setGraphMetric('speed')} 
+            className={`px-1.5 py-0.5 border-2 border-charcoal transition-all ${
+              graphMetric === 'speed' ? 'bg-brutalGreen text-white shadow-none translate-y-[1px]' : 'bg-white text-charcoal hover:-translate-y-[1px] cursor-pointer'
+            }`}
+          >
+            Speed
+          </button>
+        </div>
+
         {velocityHistory.length < 2 ? (
           <div className="h-full flex items-center justify-center text-center text-[10px] font-bold text-charcoal/40 font-mono mt-1">
             WAITING FOR KINEMATICS DATA...
@@ -270,9 +306,9 @@ const RightInspector = ({ selectedBody, onUpdateProperty }) => {
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="speed" 
-                  stroke="#10B981" // brutalGreen line
-                  strokeWidth={2} 
+                  dataKey={graphMetric} 
+                  stroke={graphMetric === 'vx' ? '#EF4444' : graphMetric === 'dx' ? '#3B82F6' : '#10B981'} 
+                  strokeWidth={2.5} 
                   dot={false} 
                 />
               </LineChart>

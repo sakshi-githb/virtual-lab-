@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import Matter from 'matter-js';
 import { useSocket } from '../../context/SocketContext';
 
@@ -11,6 +11,19 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
   
   // Track selected body ref to modify in real-time
   const selectedBodyRef = useRef(null);
+
+  // Diagnostic Debug HUD State
+  const [debugInfo, setDebugInfo] = useState({
+    w: 0,
+    h: 0,
+    mouseX: 0,
+    mouseY: 0,
+    button: -1,
+    bodies: 0,
+    ticks: 0,
+    selected: 'None'
+  });
+  const tickCountRef = useRef(0);
 
   // Consume WebSockets hooks for collaboration sync
   const socketContext = useSocket();
@@ -143,8 +156,8 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       });
       pivot.syncId = actualPivotId;
 
-      // 2. Heavy bob (Moving body)
-      const bob = Matter.Bodies.circle(x, y + length, radius, {
+      // 2. Heavy bob (Moving body) - Spawned at 45 degree offset so it immediately oscillates on load
+      const bob = Matter.Bodies.circle(x - 106, y + 106, radius, {
         restitution: 0.8,
         friction: 0.05,
         density: 0.02, // heavier
@@ -182,24 +195,24 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     },
 
     // Spawns a spring-anchored block
-    spawnSpringBlock: (x = 400, y = 200, anchorSyncId = null, blockSyncId = null, isRemote = false) => {
+    spawnSpringBlock: (x = 450, y = 200, anchorSyncId = null, blockSyncId = null, isRemote = false) => {
       const engine = engineRef.current;
       if (!engine) return;
 
       const actualAnchorId = anchorSyncId || `${Date.now()}-springanchor-${Math.random().toString(36).substr(2, 9)}`;
       const actualBlockId = blockSyncId || `${Date.now()}-springblock-${Math.random().toString(36).substr(2, 9)}`;
 
-      // 1. Static anchor
-      const anchor = Matter.Bodies.rectangle(x, y - 100, 40, 20, {
+      // 1. Static anchor (placed horizontally on the left)
+      const anchor = Matter.Bodies.rectangle(x - 150, y, 20, 40, {
         isStatic: true,
         render: { fillStyle: '#1A1A1A' }
       });
       anchor.syncId = actualAnchorId;
 
-      // 2. Moving spring block
-      const block = Matter.Bodies.rectangle(x, y, 50, 50, {
+      // 2. Moving spring block - Spawned stretched to the right (x + 80) so it oscillates immediately
+      const block = Matter.Bodies.rectangle(x + 80, y, 50, 50, {
         restitution: 0.2,
-        friction: 0.2,
+        friction: 0.05, // low friction for smooth sliding
         render: {
           fillStyle: '#EF4444', // brutalRed
           strokeStyle: '#1A1A1A',
@@ -210,13 +223,14 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       block.shapeType = 'box';
       block.syncId = actualBlockId;
 
-      // 3. Spring constraint
+      // 3. Spring constraint (horizontal) with explicit resting length
       const spring = Matter.Constraint.create({
         bodyA: anchor,
         pointB: { x: 0, y: 0 },
         bodyB: block,
+        length: 150, // Stretched by 80px on spawn
         stiffness: 0.05, // highly elastic spring
-        damping: 0.05,
+        damping: 0.02, // lower damping for longer oscillation waves
         render: {
           strokeStyle: '#1A1A1A',
           lineWidth: 4,
@@ -235,6 +249,100 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       }
     },
 
+    // Spawns a friction slope inclined plane preset
+    spawnFrictionSlope: (isRemote = false) => {
+      const engine = engineRef.current;
+      if (!engine) return;
+
+      const rampSyncId = `${Date.now()}-ramp-${Math.random().toString(36).substr(2, 9)}`;
+      const blockSyncId = `${Date.now()}-slidingblock-${Math.random().toString(36).substr(2, 9)}`;
+
+      // 1. Static inclined plane (ramp)
+      const ramp = Matter.Bodies.rectangle(400, 300, 350, 20, {
+        isStatic: true,
+        angle: 0.4, // ~23 degrees
+        render: {
+          fillStyle: '#1A1A1A',
+          strokeStyle: '#1A1A1A',
+          lineWidth: 2
+        }
+      });
+      ramp.syncId = rampSyncId;
+      ramp.labelName = "Inclined Plane";
+
+      // 2. Dynamic sliding block on top
+      const block = Matter.Bodies.rectangle(300, 200, 45, 45, {
+        angle: 0.4,
+        restitution: 0.1,
+        friction: 0.05, // low initial friction
+        render: {
+          fillStyle: '#EF4444', // brutalRed
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      block.syncId = blockSyncId;
+      block.labelName = "Sliding Block";
+      block.shapeType = 'box';
+
+      Matter.Composite.add(engine.world, [ramp, block]);
+      selectBody(block);
+
+      if (!isRemote && roomCodeRef.current && socketRef.current) {
+        socketRef.current.emit('physics:action', {
+          actionType: 'preset',
+          data: { presetType: 'frictionSlope', rampSyncId, blockSyncId }
+        });
+      }
+    },
+
+    // Spawns a bouncing bounciness comparison preset
+    spawnBouncingComparison: (isRemote = false) => {
+      const engine = engineRef.current;
+      if (!engine) return;
+
+      const ballASyncId = `${Date.now()}-ballA-${Math.random().toString(36).substr(2, 9)}`;
+      const ballBSyncId = `${Date.now()}-ballB-${Math.random().toString(36).substr(2, 9)}`;
+
+      // 1. Ball A (Highly Elastic - Bouncy)
+      const ballA = Matter.Bodies.circle(300, 100, 25, {
+        restitution: 0.9,
+        friction: 0.1,
+        render: {
+          fillStyle: '#FACC15', // brutalYellow
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      ballA.syncId = ballASyncId;
+      ballA.labelName = "Bouncy Ball (Elastic)";
+      ballA.shapeType = 'circle';
+
+      // 2. Ball B (Inelastic - Dull)
+      const ballB = Matter.Bodies.circle(500, 100, 25, {
+        restitution: 0.15,
+        friction: 0.1,
+        render: {
+          fillStyle: '#3B82F6', // brutalBlue
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      ballB.syncId = ballBSyncId;
+      ballB.labelName = "Lead Ball (Inelastic)";
+      ballB.shapeType = 'circle';
+
+      Matter.Composite.add(engine.world, [ballA, ballB]);
+      selectBody(ballA);
+
+      if (!isRemote && roomCodeRef.current && socketRef.current) {
+        socketRef.current.emit('physics:action', {
+          actionType: 'preset',
+          data: { presetType: 'bouncingComparison', ballASyncId, ballBSyncId }
+        });
+      }
+    },
+
     // Controls: Play / Pause
     setRunning: (isRunning) => {
       const runner = runnerRef.current;
@@ -242,6 +350,8 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       if (!runner || !engine) return;
 
       if (isRunning) {
+        // Prevent duplicate loops by stopping the runner before running it again
+        Matter.Runner.stop(runner);
         Matter.Runner.run(runner, engine);
       } else {
         Matter.Runner.stop(runner);
@@ -253,14 +363,19 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       const engine = engineRef.current;
       if (!engine) return;
 
-      // Clear world bodies except boundaries
-      const bodiesToKeep = engine.world.bodies.filter(b => b.isBoundary);
-      
-      // Clear entire composite
-      Matter.Composite.clear(engine.world, false);
-      
-      // Add back boundaries
-      Matter.Composite.add(engine.world, bodiesToKeep);
+      // Selectively remove all bodies except the outer boundary walls
+      const bodiesToRemove = engine.world.bodies.filter(b => !b.isBoundary);
+      Matter.Composite.remove(engine.world, bodiesToRemove);
+
+      // Selectively remove all constraints except the mouse grabbing constraint itself
+      if (mouseConstraintRef.current) {
+        const constraintsToRemove = engine.world.constraints.filter(
+          c => c !== mouseConstraintRef.current && c !== mouseConstraintRef.current.constraint
+        );
+        Matter.Composite.remove(engine.world, constraintsToRemove);
+      } else {
+        Matter.Composite.clear(engine.world, false);
+      }
       
       selectedBodyRef.current = null;
       onSelectBody(null);
@@ -411,6 +526,10 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       syncData.bodies.forEach(b => {
         const localBody = engine.world.bodies.find(l => l.syncId === b.syncId);
         if (localBody) {
+          // If this body is currently being dragged by the local user, do not let host positions snap it back
+          if (mouseConstraintRef.current && mouseConstraintRef.current.body === localBody) {
+            return;
+          }
           Matter.Body.setPosition(localBody, { x: b.x, y: b.y });
           Matter.Body.setAngle(localBody, b.angle);
           Matter.Body.setVelocity(localBody, { x: b.vx, y: b.vy });
@@ -461,8 +580,9 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     const sceneContainer = sceneRef.current;
     if (!sceneContainer) return;
 
-    const width = sceneContainer.clientWidth;
-    const height = sceneContainer.clientHeight;
+    // Use container dimensions or default fallbacks
+    const initialWidth = sceneContainer.clientWidth || 800;
+    const initialHeight = sceneContainer.clientHeight || 500;
 
     // 1. Create Engine
     const engine = Matter.Engine.create({
@@ -475,12 +595,13 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       element: sceneContainer,
       engine: engine,
       options: {
-        width: width,
-        height: height,
+        width: initialWidth,
+        height: initialHeight,
         wireframes: false,
         background: 'transparent',
         showVelocity: true,
-        showAngleIndicator: false
+        showAngleIndicator: false,
+        pixelRatio: 1 // Forces 1:1 pixel mapping to resolve high-DPI coordinate mismatch
       }
     });
     renderRef.current = render;
@@ -491,7 +612,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     runnerRef.current = runner;
     Matter.Runner.run(runner, engine);
 
-    // 4. Boundaries
+    // 4. Boundaries (Using large static dimensions to prevent layout collapse on initial mount)
     const thickness = 60;
     const wallOptions = { 
       isStatic: true, 
@@ -502,15 +623,16 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       }
     };
 
-    const floor = Matter.Bodies.rectangle(width / 2, height + thickness / 2 - 4, width, thickness, wallOptions);
-    const ceiling = Matter.Bodies.rectangle(width / 2, -thickness / 2 + 4, width, thickness, wallOptions);
-    const leftWall = Matter.Bodies.rectangle(-thickness / 2 + 4, height / 2, thickness, height, wallOptions);
-    const rightWall = Matter.Bodies.rectangle(width + thickness / 2 - 4, height / 2, thickness, height, wallOptions);
+    const floor = Matter.Bodies.rectangle(initialWidth / 2, initialHeight + thickness / 2 - 4, 8000, thickness, wallOptions);
+    const ceiling = Matter.Bodies.rectangle(initialWidth / 2, -thickness / 2 + 4, 8000, thickness, wallOptions);
+    const leftWall = Matter.Bodies.rectangle(-thickness / 2 + 4, initialHeight / 2, thickness, 8000, wallOptions);
+    const rightWall = Matter.Bodies.rectangle(initialWidth + thickness / 2 - 4, initialHeight / 2, thickness, 8000, wallOptions);
 
     Matter.Composite.add(engine.world, [floor, ceiling, leftWall, rightWall]);
 
     // 5. Mouse Grabbing
     const mouse = Matter.Mouse.create(render.canvas);
+    render.mouse = mouse; // Sync mouse with renderer
     const mouseConstraint = Matter.MouseConstraint.create(engine, {
       mouse: mouse,
       constraint: {
@@ -529,20 +651,26 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     Matter.Composite.add(engine.world, mouseConstraint);
     mouseConstraintRef.current = mouseConstraint;
 
-    // 6. Mouse Interaction listeners
+    // 6. Mouse Interaction listeners - Hit test click to select or deselect bodies
     Matter.Events.on(mouseConstraint, 'mousedown', (event) => {
-      const clickedBody = event.source.body;
-      if (clickedBody && !clickedBody.isStatic && !clickedBody.isBoundary) {
-        selectBody(clickedBody);
-      } else if (!clickedBody) {
+      const mousePosition = event.mouse.position;
+      const allBodies = Matter.Composite.allBodies(engine.world);
+      const clickedBodies = Matter.Query.point(allBodies, mousePosition);
+      
+      // Find the first body clicked (excluding outer boundaries)
+      const validBody = clickedBodies.find(b => !b.isBoundary);
+      
+      if (validBody) {
+        selectBody(validBody);
+      } else {
         selectedBodyRef.current = null;
         onSelectBody(null);
       }
     });
 
-    // Relay active cursor dragging
-    Matter.Events.on(mouseConstraint, 'drag', (event) => {
-      const body = event.body;
+    // Relay active cursor dragging on mouse move if a body is being held
+    Matter.Events.on(mouseConstraint, 'mousemove', () => {
+      const body = mouseConstraint.body;
       if (body && body.syncId && socketRef.current && roomCodeRef.current) {
         socketRef.current.emit('physics:action', {
           actionType: 'drag',
@@ -557,13 +685,31 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       if (selected && !selected.isStatic) {
         triggerBodySelectionUpdate(selected);
       }
+
+      // Throttled debug update (every 30 frames ~ 0.5s)
+      tickCountRef.current += 1;
+      if (tickCountRef.current % 30 === 0) {
+        setDebugInfo(prev => ({
+          ...prev,
+          ticks: tickCountRef.current,
+          bodies: engine.world.bodies.length,
+          selected: selectedBodyRef.current ? (selectedBodyRef.current.labelName || selectedBodyRef.current.label) : 'None',
+          mouseX: Math.round(mouse.position.x),
+          mouseY: Math.round(mouse.position.y),
+          button: mouse.button
+        }));
+      }
     });
 
-    // Resize orchestration
-    const handleResize = () => {
-      if (!sceneRef.current || !renderRef.current) return;
-      const w = sceneRef.current.clientWidth;
-      const h = sceneRef.current.clientHeight;
+    // Resize orchestration using ResizeObserver to handle mount size discovery and container updates
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!renderRef.current || !sceneRef.current) return;
+      
+      const entry = entries[0];
+      const w = entry ? entry.contentRect.width : sceneRef.current.clientWidth;
+      const h = entry ? entry.contentRect.height : sceneRef.current.clientHeight;
+
+      if (w === 0 || h === 0) return;
       
       renderRef.current.bounds.max.x = w;
       renderRef.current.bounds.max.y = h;
@@ -573,20 +719,55 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       if (renderRef.current.canvas) {
         renderRef.current.canvas.width = w;
         renderRef.current.canvas.height = h;
+        // Keep CSS style dimensions in perfect alignment with internal resolution
+        renderRef.current.canvas.style.width = w + 'px';
+        renderRef.current.canvas.style.height = h + 'px';
       }
+
+      if (mouse) {
+        Matter.Mouse.updateOffset(mouse);
+      }
+
+      setDebugInfo(prev => ({ ...prev, w: Math.round(w), h: Math.round(h) }));
       
+
+      // Dynamically reposition all boundary walls to align with the resized viewport w and h
       Matter.Body.setPosition(floor, { x: w / 2, y: h + thickness / 2 - 4 });
+      Matter.Body.setPosition(ceiling, { x: w / 2, y: -thickness / 2 + 4 });
+      Matter.Body.setPosition(leftWall, { x: -thickness / 2 + 4, y: h / 2 });
       Matter.Body.setPosition(rightWall, { x: w + thickness / 2 - 4, y: h / 2 });
+    });
+    
+    // Native mouse/touch event tracking for diagnostic analysis
+    const handleNativeMousedown = (e) => {
+      setDebugInfo(prev => ({
+        ...prev,
+        button: e.button,
+        mouseX: Math.round(e.clientX - sceneContainer.getBoundingClientRect().left),
+        mouseY: Math.round(e.clientY - sceneContainer.getBoundingClientRect().top)
+      }));
     };
-    window.addEventListener('resize', handleResize);
+    const handleNativeMouseup = () => {
+      setDebugInfo(prev => ({ ...prev, button: -1 }));
+    };
+    
+    sceneContainer.addEventListener('mousedown', handleNativeMousedown);
+    sceneContainer.addEventListener('mouseup', handleNativeMouseup);
+
+    resizeObserver.observe(sceneContainer);
 
     // 8. Clean Dismount
     return () => {
-      window.removeEventListener('resize', handleResize);
+      sceneContainer.removeEventListener('mousedown', handleNativeMousedown);
+      sceneContainer.removeEventListener('mouseup', handleNativeMouseup);
+      resizeObserver.disconnect();
       Matter.Render.stop(render);
       Matter.Runner.stop(runner);
       Matter.Composite.clear(engine.world, false);
       Matter.Engine.clear(engine);
+      if (render.canvas) {
+        render.canvas.remove();
+      }
     };
   }, []);
 
@@ -603,6 +784,17 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
         </div>
         <div className="absolute bottom-4 right-4 pointer-events-none text-charcoal/20 select-none font-bold text-lg">
           VIRTUAL-LAB PLATFORM
+        </div>
+
+        {/* Diagnostic Debug HUD (Brutal styled) */}
+        <div className="absolute bottom-4 left-4 bg-white border-3 border-charcoal p-2.5 font-mono text-[9px] z-50 shadow-brutal-sm pointer-events-none select-none text-left flex flex-col gap-0.5">
+          <div className="font-extrabold uppercase border-b-2 border-charcoal/20 pb-1 mb-1 text-[10px]">🛠️ Debug HUD</div>
+          <div>Size: {debugInfo.w}x{debugInfo.h}</div>
+          <div>Mouse: ({debugInfo.mouseX}, {debugInfo.mouseY})</div>
+          <div>Button: {debugInfo.button}</div>
+          <div>Bodies: {debugInfo.bodies}</div>
+          <div>Ticks: {debugInfo.ticks}</div>
+          <div>Selected: {debugInfo.selected}</div>
         </div>
       </div>
     </div>

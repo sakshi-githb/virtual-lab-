@@ -42,6 +42,11 @@ This document details key engineering tradeoffs, challenges, and lessons learned
 *   **Takeaway**: Directly instantiating socket listeners inside individual UI panels leads to duplicate connections and redundant event handlers.
 *   **Resolution**: Implemented a centralized `SocketProvider` context. This hoists the socket instance to the root of the React application, ensuring a single connection channel. Sub-components like `BottomPanel` (chat/players list) or `TopBar` consume this context declaratively.
 
+---
 
-
-
+## 8. React 18 Double-Mount Canvas Bug & Multiplayer Drag Sync
+*   **Challenge**: In React 18 development mode, StrictMode mounts components twice to verify cleanup logic. With Matter.js, this caused two `<canvas>` elements to mount simultaneously—one active and one dead—with the dead one blocking clicks or event listeners getting attached to the wrong canvas, rendering the sandbox completely unmovable. Furthermore, in collaborative rooms, spectator mouse drags were instantly overridden and snapped back by the host's 30Hz high-frequency coordinate broadcast.
+*   **Resolution**:
+    1.  **Dismount Cleanup**: Enhanced the `PhysicsCanvas` cleanup function to explicitly call `render.canvas.remove()`, preventing duplicate dead canvas elements from overlaying the active container.
+    2.  **Multiplayer Drag Event Repair**: Corrected the drag handler on `mouseConstraint` from the unsupported `'drag'` event to `'mousemove'` while a body is held.
+    3.  **Authority Handshake**: Configured spectators to ignore incoming host `physics:sync` coordinate updates for the specific body they are currently dragging. This prevents host coordinate snaps from fighting the spectator's drag input while forwarding the spectator's mouse position to the host.

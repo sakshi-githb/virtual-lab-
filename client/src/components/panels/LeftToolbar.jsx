@@ -26,8 +26,10 @@ const LeftToolbar = ({
   ];
 
   const presets = [
-    { id: 'pendulum', name: 'Pendulum', action: () => onSpawnPreset('pendulum') },
-    { id: 'spring', name: 'Spring', action: () => onSpawnPreset('spring') },
+    { id: 'pendulum', name: 'Pendulum Rig', action: () => onSpawnPreset('pendulum') },
+    { id: 'spring', name: 'Spring Mass', action: () => onSpawnPreset('spring') },
+    { id: 'friction', name: 'Friction Ramp', action: () => onSpawnPreset('friction') },
+    { id: 'bounciness', name: 'Collision Balls', action: () => onSpawnPreset('bounciness') },
   ];
 
   const colors = [

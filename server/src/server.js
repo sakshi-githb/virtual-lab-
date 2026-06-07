@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth.js';
+import aiRouter from './routes/ai.js';
 import connectDB from './config/db.js';
 import { initSockets } from './sockets/socketManager.js';
 
@@ -26,6 +27,7 @@ app.use(express.json());
 
 // Routes Mount point
 app.use('/api/auth', authRouter);
+app.use('/api/ai', aiRouter);
 
 // Heartbeat health check API
 app.get('/health', (req, res) => {

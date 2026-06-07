@@ -46,6 +46,7 @@ function App() {
   const [activeColor, setActiveColor] = useState('#FACC15'); // default brutalYellow
   const [selectedBody, setSelectedBody] = useState(null);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [activePreset, setActivePreset] = useState('none');
   const [user, setUser] = useState(null); 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -121,6 +122,8 @@ function App() {
     const dropX = 350 + Math.random() * 100;
     const dropY = 120 + Math.random() * 60;
 
+    setActivePreset('none');
+
     if (shapeType === 'circle') {
       canvasRef.current.spawnCircle(dropX, dropY, 30);
       showNotification('Spawned circular rigid body', 'success');
@@ -132,6 +135,7 @@ function App() {
       showNotification('Spawned pentagon shape', 'success');
     }
     
+    setSelectedTool('select');
     // Auto close left drawer on mobile after spawning to clear viewport
     setIsLeftOpen(false);
   };
@@ -140,14 +144,30 @@ function App() {
   const handleSpawnPreset = (presetType) => {
     if (!canvasRef.current) return;
 
+    // Auto-clear the world first to present a clean, unconfusing setup for the selected experiment
+    canvasRef.current.resetWorld();
+    setIsPlaying(true);
+    setActivePreset(presetType);
+
     if (presetType === 'pendulum') {
       canvasRef.current.spawnPendulum(400, 80);
+      canvasRef.current.setGravity(1.0); // Standard Earth gravity
       showNotification('Suspended pendulum rig injected', 'success');
     } else if (presetType === 'spring') {
-      canvasRef.current.spawnSpringBlock(400, 160);
-      showNotification('Oscillating spring block anchored', 'success');
+      canvasRef.current.spawnSpringBlock(450, 200);
+      canvasRef.current.setGravity(0.0); // Zero-gravity for horizontal spring oscillation
+      showNotification('Oscillating spring block anchored (Zero-G)', 'success');
+    } else if (presetType === 'friction') {
+      canvasRef.current.spawnFrictionSlope();
+      canvasRef.current.setGravity(1.0); // Standard Earth gravity
+      showNotification('Inclined friction slope ramp injected', 'success');
+    } else if (presetType === 'bounciness') {
+      canvasRef.current.spawnBouncingComparison();
+      canvasRef.current.setGravity(1.0); // Standard Earth gravity
+      showNotification('Elastic vs Inelastic collision spheres injected', 'success');
     }
 
+    setSelectedTool('select');
     // Auto close left drawer on mobile
     setIsLeftOpen(false);
   };
@@ -162,6 +182,7 @@ function App() {
     if (canvasRef.current) {
       canvasRef.current.resetWorld();
       setIsPlaying(true);
+      setActivePreset('none');
       showNotification('Cleared sandbox rigid bodies', 'success');
     }
   };
@@ -304,7 +325,7 @@ function App() {
 
           {/* Bottom Panel (Lobby / Private Journal) - Locked directly underneath canvas inside center column */}
           <div className="flex-shrink-0 h-48">
-            {labMode === 'solo' ? <NotebookPanel /> : <BottomPanel />}
+            {labMode === 'solo' ? <NotebookPanel onSpawnPreset={handleSpawnPreset} /> : <BottomPanel />}
           </div>
         </div>
 
@@ -319,7 +340,11 @@ function App() {
               selectedBody={selectedBody}
               onUpdateProperty={handleUpdateProperty}
             />
-            <AIProf selectedBody={selectedBody} />
+            <AIProf 
+              selectedBody={selectedBody} 
+              activePreset={activePreset}
+              isPlaying={isPlaying}
+            />
           </div>
         </div>
 

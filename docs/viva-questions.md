@@ -49,6 +49,15 @@ This guide contains key engineering questions frequently asked during academic p
     *   **Global Access**: Any child component in the component tree can consume the socket context (e.g., calling `const { roomCode } = useSocket()`) without having to prop-drill connection objects down through multiple layout layers.
     *   **Synchronized React State**: The context translates raw socket events (like `peer:joined` or `chat:message`) into standard React state updates, causing consuming components to re-render reactively when new data arrives.
 
+### Q9: Why does a duplicate canvas issue occur when integrating third-party engines like Matter.js with React 18, and how do you fix it?
+*   **Answer**:
+    *   **The Cause**: In development mode under React 18, `StrictMode` mounts components, unmounts them, and mounts them again to check for missing resource cleanups. Third-party visual engines like Matter.js append their `<canvas>` element to a container ref upon setup. Because the component mounts twice, two canvases are created. Since standard unmount handlers for Matter.js (like `Engine.clear`) do not delete the HTML canvas element itself, the dead canvas remains in the DOM, overlaying the active one and blocking all user mouse inputs.
+    *   **The Fix**: In the `useEffect` dismount cleanup function, you must explicitly call `render.canvas.remove()` to wipe the canvas element from the DOM, ensuring that only one active canvas exists in the container.
 
-
-
+### Q10: How do you handle dragging authority in a real-time collaborative physics engine to prevent coordinate snapping or rubber-banding?
+*   **Answer**:
+    *   **The Problem**: In a multiplayer sandbox, the Host client has authority over the physics simulation and broadcasts body coordinates at 30Hz to spectators. If a spectator attempts to drag a body locally, their mouse input changes the body position. However, in the next frame, the Host broadcasts the body's old location, causing the spectator's local body to snap or rubber-band back to its previous position, rendering it unmovable.
+    *   **The Solution**: We implement a hybrid authority handshake:
+        1. **Event Correction**: We bind mouse drag interactions on the spectator's local canvas using the `mousemove` event of the `MouseConstraint` (ensuring events are continually fired while a body is held).
+        2. **Drag Override**: While dragging is active, the spectator client ignores incoming `physics:sync` coordinate updates specifically for the body they are holding.
+        3. **Authority Update**: The spectator sends the drag coordinates to the server, which forwards them to the Host. The Host updates the body's coordinates inside its authoritative engine, resolving collisions and broadcasting the updated positions back to all peers. This keeps the drag movements completely smooth and synchronized.
