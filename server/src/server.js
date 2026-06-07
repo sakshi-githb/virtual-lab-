@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth.js';
 import connectDB from './config/db.js';
+import { initSockets } from './sockets/socketManager.js';
 
 // Load environmental variables
 dotenv.config();
@@ -46,14 +47,8 @@ const io = new Server(httpServer, {
   }
 });
 
-// Basic connection orchestration check
-io.on('connection', (socket) => {
-  console.log(`[Socket Link Connected]: Socket ID ${socket.id}`);
-  
-  socket.on('disconnect', () => {
-    console.log(`[Socket Link Disconnected]: Socket ID ${socket.id}`);
-  });
-});
+// Orchestrate socket handlers
+initSockets(io);
 
 // Start listening
 httpServer.listen(PORT, () => {

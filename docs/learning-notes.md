@@ -30,4 +30,11 @@ This document details key engineering tradeoffs, challenges, and lessons learned
 *   **Takeaway**: Hardcoding backend API endpoints (such as `http://localhost:5000/api`) in client code leads to CORS errors during development and configuration maintenance overhead. 
 *   **Resolution**: By configuring a development server proxy in `vite.config.js`, all relative `/api` paths are routed automatically to the Express backend. This eliminates browser CORS pre-flight checks, simplifies code maintenance, and allows relative URLs to be used for seamless production deployment.
 
+---
+
+## 6. Socket.io Real-Time Collaborative Rooms & GC
+*   **Takeaway**: Real-time room features easily cause memory leaks on the backend if socket registries retain records for disconnected sockets, or if empty rooms are left allocated in RAM indefinitely.
+*   **Resolution**: Implemented automatic garbage collection (GC) inside `socketManager.js`. Whenever a client leaves a room or disconnects, they are cleanly deregistered. If the room's occupant count hits zero, the room configuration is deleted from the `rooms` Map registry, preventing server RAM leaks.
+
+
 

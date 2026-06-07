@@ -35,4 +35,13 @@ This guide contains key engineering questions frequently asked during academic p
         1. It makes the browser believe that the frontend and backend are hosted on the same origin (protocol, domain, and port), thereby eliminating CORS security checks.
         2. It allows developers to use relative paths (e.g., `fetch('/api/auth/login')`), meaning no hardcoded URLs need to be edited when moving the code from a local environment to production.
 
+### Q7: Why do we use room-based socket broadcasts (`socket.to(...)`) instead of global broadcasts (`io.emit(...)`) in multiplayer setups, and how do we prevent network saturation?
+*   **Answer**: 
+    *   **Room-based Broadcasting**: `socket.to("room:XYZ")` ensures that messages are sent only to sockets that have explicitly joined that specific room. A global broadcast (`io.emit`) sends messages to every single connected client on the server, which would cause severe network degradation, security leaks, and client crashes in a multi-room multiplayer application.
+    *   **Preventing Network Saturation**:
+        1. **Throttling/Frequency Capping**: Instead of sending updates on every single physics engine tick (60Hz), we throttle synchronization updates to 30Hz (every 33ms).
+        2. **Action Sync vs. State Sync**: We only sync the full coordinate state of active physics bodies at 30Hz. Single events like spawning an object, clicking reset, or changing gravity are sent once as discrete actions (`physics:action`) rather than continuous streams.
+        3. **Garbage Collection**: Sockets automatically clean up their memory by leaving rooms on disconnect, and rooms are deleted from server memory immediately when the last user exits.
+
+
 
