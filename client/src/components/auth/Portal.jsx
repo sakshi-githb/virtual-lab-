@@ -27,7 +27,7 @@ const Portal = ({ onEnterWorkspace }) => {
     setErrorMsg('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -55,15 +55,43 @@ const Portal = ({ onEnterWorkspace }) => {
       return;
     }
 
-    // Simulate Server Authentication response
-    onEnterWorkspace({
-      user: { 
-        name: authMethod === 'register' ? formData.name : formData.email.split('@')[0], 
-        role: 'member' 
-      },
-      labMode
-    });
+    try {
+      const endpoint = authMethod === 'register' ? '/api/auth/register' : '/api/auth/login';
+      const bodyPayload = authMethod === 'register'
+        ? { name: formData.name, email: formData.email, password: formData.password }
+        : { email: formData.email, password: formData.password };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyPayload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Authentication failed');
+      }
+
+      // Save token in localStorage
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
+      onEnterWorkspace({
+        user: { 
+          id: data.user.id,
+          name: data.user.name, 
+          email: data.user.email,
+          role: 'member' 
+        },
+        labMode
+      });
+    } catch (error) {
+      setErrorMsg(error.message || 'Server connection error');
+    }
   };
+
 
   return (
     <div className="w-screen min-h-screen bg-cream flex items-center justify-center font-sans p-4 sm:p-6 select-none relative overflow-y-auto">

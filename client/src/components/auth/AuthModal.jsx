@@ -20,7 +20,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     setErrorMsg('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -33,8 +33,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       // Bubble guest context upwards
       onAuthSuccess({
         name: formData.name,
-        role: 'guest',
-        token: 'guest-mock-token'
+        role: 'guest'
       });
       onClose();
       return;
@@ -51,15 +50,41 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       return;
     }
 
-    // Simulate Server Authentication response
-    onAuthSuccess({
-      name: activeMode === 'register' ? formData.name : formData.email.split('@')[0],
-      role: 'member',
-      email: formData.email,
-      token: 'member-mock-jwt-token'
-    });
-    onClose();
+    try {
+      const endpoint = activeMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+      const bodyPayload = activeMode === 'register'
+        ? { name: formData.name, email: formData.email, password: formData.password }
+        : { email: formData.email, password: formData.password };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyPayload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Authentication failed');
+      }
+
+      // Save token in localStorage
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
+      onAuthSuccess({
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        role: 'member'
+      });
+      onClose();
+    } catch (error) {
+      setErrorMsg(error.message || 'Server connection error');
+    }
   };
+
 
   return (
     <div className="fixed inset-0 bg-charcoal/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm select-none">

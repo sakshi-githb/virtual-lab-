@@ -24,3 +24,10 @@ This document details key engineering tradeoffs, challenges, and lessons learned
 *   **Takeaway**: The standard MONGODB_URI starts with `mongodb+srv://`, which queries DNS SRV records to find replica set shard locations dynamically. However, many consumer ISPs and home routers run basic DNS servers that block or return `ECONNREFUSED` on SRV record requests.
 *   **Resolution**: By querying the SRV endpoints manually via Google's public DNS (`8.8.8.8`) and extracting the three replica shards, we constructed a classic `mongodb://` connection string detailing host addresses, ports, and replica set flags. This allows database connectivity to bypass the local DNS SRV restriction entirely.
 
+---
+
+## 5. Vite Dev Server Proxying & Authentication Flow
+*   **Takeaway**: Hardcoding backend API endpoints (such as `http://localhost:5000/api`) in client code leads to CORS errors during development and configuration maintenance overhead. 
+*   **Resolution**: By configuring a development server proxy in `vite.config.js`, all relative `/api` paths are routed automatically to the Express backend. This eliminates browser CORS pre-flight checks, simplifies code maintenance, and allows relative URLs to be used for seamless production deployment.
+
+

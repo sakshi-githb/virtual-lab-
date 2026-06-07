@@ -6,6 +6,7 @@ import RightInspector from './components/panels/RightInspector';
 import BottomPanel from './components/panels/BottomPanel';
 import NotebookPanel from './components/panels/NotebookPanel';
 import Portal from './components/auth/Portal';
+import AuthModal from './components/auth/AuthModal';
 import AIProf from './components/panels/AIProf';
 import { 
   Save, 
@@ -33,6 +34,7 @@ function App() {
   const [selectedBody, setSelectedBody] = useState(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [user, setUser] = useState(null); 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   // Trigger physics loops when play state updates
@@ -73,6 +75,7 @@ function App() {
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     setCurrentPage('portal');
     setSelectedBody(null);
     showNotification('Logged out of experiment chamber.', 'success');
@@ -178,6 +181,7 @@ function App() {
             onSave={handleSave}
             onLoad={handleLoad}
             user={user}
+            onOpenAuthModal={() => setIsAuthModalOpen(true)}
             customRoomName={labMode === 'solo' ? 'Personal Lab' : "Newton's Den"}
             customOnlineHud={
               labMode === 'solo' ? (
@@ -281,6 +285,14 @@ function App() {
           </div>
         </div>
 
+        <AuthModal 
+          isOpen={isAuthModalOpen} 
+          onClose={() => setIsAuthModalOpen(false)} 
+          onAuthSuccess={(authUser) => {
+            setUser(authUser);
+            showNotification(`Welcome ${authUser.name}!`, 'success');
+          }} 
+        />
       </div>
     </div>
   );

@@ -28,3 +28,11 @@ This guide contains key engineering questions frequently asked during academic p
         1. Query SRV and TXT records using a public DNS resolver (like Google's `8.8.8.8`) to discover the shard hosts and replica set name, and then construct a standard `mongodb://` connection string.
         2. Set the Node.js process DNS servers to Google's public DNS using `dns.setServers(['8.8.8.8'])` before running database connection logic.
 
+### Q6: What is a Development Proxy (like Vite Proxy), and why is it preferred over CORS headers in development?
+*   **Answer**: 
+    *   A development proxy is a configuration in the dev server (like Vite or Webpack) that intercepts specific client requests (e.g., prefix `/api`) and forwards them to a different backend server (e.g., `http://localhost:5000`).
+    *   It is preferred over enabling broad CORS headers (`Access-Control-Allow-Origin: *`) in development because:
+        1. It makes the browser believe that the frontend and backend are hosted on the same origin (protocol, domain, and port), thereby eliminating CORS security checks.
+        2. It allows developers to use relative paths (e.g., `fetch('/api/auth/login')`), meaning no hardcoded URLs need to be edited when moving the code from a local environment to production.
+
+
