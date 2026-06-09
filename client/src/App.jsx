@@ -243,6 +243,7 @@ function App() {
 
   const handleLoadExperiment = (experiment) => {
     if (canvasRef.current && experiment) {
+      setActivePreset('none');
       canvasRef.current.deserializeWorld(experiment.bodies, experiment.gravityY);
       showNotification(`Loaded layout: "${experiment.title}"`, 'success');
       setIsLibraryOpen(false);

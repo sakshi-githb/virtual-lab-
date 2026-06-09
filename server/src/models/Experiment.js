@@ -15,6 +15,7 @@ const bodySchema = new mongoose.Schema({
   restitution: { type: Number, required: true },
   vx: { type: Number, default: 0 },
   vy: { type: Number, default: 0 },
+  angle: { type: Number, default: 0 },
   isStatic: { type: Boolean, default: false },
   color: { type: String, default: '#FACC15' }
 });

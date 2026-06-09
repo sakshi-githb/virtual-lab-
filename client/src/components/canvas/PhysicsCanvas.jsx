@@ -185,6 +185,8 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
         render: { fillStyle: '#1A1A1A' }
       });
       pivot.syncId = actualPivotId;
+      pivot.shapeType = 'circle';
+      pivot.radius = 8;
 
       // 2. Heavy bob (Moving body) - Spawned at 45 degree offset so it immediately oscillates on load
       const bob = Matter.Bodies.circle(x - 106, y + 106, radius, {
@@ -239,6 +241,9 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
         render: { fillStyle: '#1A1A1A' }
       });
       anchor.syncId = actualAnchorId;
+      anchor.shapeType = 'box';
+      anchor.width = 20;
+      anchor.height = 40;
 
       // 2. Moving spring block - Spawned stretched to the right (x + 80) so it oscillates immediately
       const block = Matter.Bodies.rectangle(x + 80, y, 50, 50, {
@@ -302,6 +307,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       });
       ramp.syncId = rampSyncId;
       ramp.labelName = "Inclined Plane";
+      ramp.shapeType = 'box';
       ramp.width = 350;
       ramp.height = 20;
 
@@ -419,13 +425,14 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
           y: b.position.y,
           vx: b.velocity ? b.velocity.x : 0,
           vy: b.velocity ? b.velocity.y : 0,
+          angle: b.angle || 0,
           width: b.width || null,
           height: b.height || null,
           radius: b.radius || null,
           sides: b.sidesCount || null,
-          mass: b.mass,
-          friction: b.friction,
-          restitution: b.restitution,
+          mass: (b.mass === Infinity || isNaN(b.mass) || b.mass === null) ? 1.0 : b.mass,
+          friction: (b.friction === Infinity || isNaN(b.friction) || b.friction === null) ? 0.1 : b.friction,
+          restitution: (b.restitution === Infinity || isNaN(b.restitution) || b.restitution === null) ? 0.0 : b.restitution,
           isStatic: b.isStatic,
           color: b.customColor || b.render.fillStyle
         };
@@ -479,6 +486,9 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
           body.customColor = fillStyle;
           body.shapeType = b.shapeType;
 
+          if (b.angle !== undefined && b.angle !== null) {
+            Matter.Body.setAngle(body, parseFloat(b.angle));
+          }
           if (b.mass !== undefined && b.mass !== null) {
             Matter.Body.setMass(body, parseFloat(b.mass));
           }
