@@ -444,6 +444,49 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       if (engine) {
         engine.gravity.y = parseFloat(yVal);
       }
+    },
+
+    // Expose system-wide kinematics and energy conservation metrics
+    getSystemMetrics: () => {
+      const engine = engineRef.current;
+      if (!engine) return null;
+
+      const bodies = engine.world.bodies.filter(b => !b.isBoundary && !b.isStatic);
+      let totalKineticEnergy = 0;
+      let totalPotentialEnergy = 0;
+      let totalMass = 0;
+
+      const canvasHeight = renderRef.current?.canvas?.height || 500;
+      const g = engine.gravity.y;
+
+      bodies.forEach(b => {
+        const speed = b.speed;
+        const ke = 0.5 * b.mass * speed * speed;
+        // height from the bottom floor
+        const height = Math.max(0, canvasHeight - b.position.y);
+        const pe = b.mass * g * (height / 100); // normalized height factor for cleanly scaled values
+
+        totalKineticEnergy += ke;
+        totalPotentialEnergy += pe;
+        totalMass += b.mass;
+      });
+
+      return {
+        bodyCount: bodies.length,
+        totalMass: parseFloat(totalMass.toFixed(1)),
+        kineticEnergy: parseFloat(totalKineticEnergy.toFixed(1)),
+        potentialEnergy: parseFloat(totalPotentialEnergy.toFixed(1)),
+        totalEnergy: parseFloat((totalKineticEnergy + totalPotentialEnergy).toFixed(1)),
+        rawBodiesList: bodies.map(b => ({
+          label: b.labelName || b.label,
+          x: Math.round(b.position.x),
+          y: Math.round(b.position.y),
+          vx: parseFloat(b.velocity.x.toFixed(2)),
+          vy: parseFloat(b.velocity.y.toFixed(2)),
+          speed: parseFloat(b.speed.toFixed(2)),
+          mass: b.mass
+        }))
+      };
     }
   }));
 

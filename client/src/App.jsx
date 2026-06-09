@@ -8,6 +8,7 @@ import NotebookPanel from './components/panels/NotebookPanel';
 import Portal from './components/auth/Portal';
 import AuthModal from './components/auth/AuthModal';
 import AIProf from './components/panels/AIProf';
+import AnalyticsModal from './components/panels/AnalyticsModal';
 import { useSocket } from './context/SocketContext';
 import { 
   Save, 
@@ -47,6 +48,7 @@ function App() {
   const [selectedBody, setSelectedBody] = useState(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [activePreset, setActivePreset] = useState('none');
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [user, setUser] = useState(null); 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -236,6 +238,7 @@ function App() {
             onLoad={handleLoad}
             user={user}
             onOpenAuthModal={() => setIsAuthModalOpen(true)}
+            onOpenAnalytics={() => setIsAnalyticsOpen(true)}
             customRoomName={labMode === 'solo' ? 'Personal Lab' : (roomCode ? `Room: ${roomCode}` : "Newton's Den")}
             customOnlineHud={
               labMode === 'solo' ? (
@@ -355,6 +358,11 @@ function App() {
             setUser(authUser);
             showNotification(`Welcome ${authUser.name}!`, 'success');
           }} 
+        />
+        <AnalyticsModal
+          isOpen={isAnalyticsOpen}
+          onClose={() => setIsAnalyticsOpen(false)}
+          canvasRef={canvasRef}
         />
       </div>
     </div>

@@ -7,7 +7,8 @@ import {
   FolderOpen, 
   User, 
   Globe, 
-  Sparkles
+  Sparkles,
+  Activity
 } from 'lucide-react';
 
 const TopBar = ({ 
@@ -18,6 +19,7 @@ const TopBar = ({
   onLoad,
   user,
   onOpenAuthModal,
+  onOpenAnalytics,
   customRoomName = "Newton's Den",
   customOnlineHud = null
 }) => {
@@ -86,6 +88,15 @@ const TopBar = ({
         >
           <RotateCcw className="w-4 h-4" />
           <span>Reset</span>
+        </button>
+
+        <button
+          onClick={onOpenAnalytics}
+          className="btn-brutal px-3 py-1.5 bg-brutalGreen text-white text-xs hover:bg-emerald-600 flex items-center gap-1.5"
+          title="Open System Analytics & Telemetry"
+        >
+          <Activity className="w-4 h-4" />
+          <span>Analytics</span>
         </button>
       </div>
 
