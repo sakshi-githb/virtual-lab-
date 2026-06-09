@@ -46,6 +46,24 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
           insight: "Formula: e = Rebound Speed / Approach Speed"
         };
       }
+      if (activePreset === 'projectile') {
+        return {
+          speech: "The **Projectile Cannon** is active. The red ball is launched from a -0.6 rad cannon mouth with velocity (9, -7), following a parabolic path to hit the green target.",
+          insight: "Formula: y = x*tan(θ) - (g*x²)/(2*v²*cos²(θ))"
+        };
+      }
+      if (activePreset === 'catapult') {
+        return {
+          speech: "The **Counterweight Catapult** lever is active. The heavy 3B82F6 blue block drops on the short arm, producing torque that launches the light red ball.",
+          insight: "Formula: Torque (τ) = Force * Distance"
+        };
+      }
+      if (activePreset === 'bridge') {
+        return {
+          speech: "The **Plank Bridge** stress simulation is active. The weight creates dynamic tension stress, demonstrating load distribution across linked nodes.",
+          insight: "Formula: Tension (T) = Stress Load / Linked Planks"
+        };
+      }
       return {
         speech: "Welcome to the VIRTUAL-LAB, experimenter! To start studying physical dynamics, spawn a body from the Left Dock or select a guided Template.",
         insight: "Tip: Friction determines kinetic drag, while Restitution (e) determines bounciness."

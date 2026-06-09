@@ -49,6 +49,33 @@ const NotebookPanel = ({ onSpawnPreset }) => {
       explanation: 'Restitution (e) measures bounciness. A value of 1.0 means a perfect bounce (keeps all bounce energy). A value of 0.15 drops flat like wet clay, losing its kinetic energy to impact heat.',
       steps: 'Click "Auto-Setup". Watch both balls drop. The yellow sphere (e=0.9) bounces continuously. The blue sphere (e=0.15) lands flat. Select them to tweak bounciness values!',
       preset: 'bounciness'
+    },
+    {
+      id: 'projectile',
+      title: '5. Projectile Motion Cannon',
+      topic: 'Classical Kinematics',
+      objective: 'Launch a projectile and hit the target basket.',
+      explanation: 'A launched projectile flies in a parabolic arc. Gravity constantly pulls it down vertically, while it moves forward horizontally at a constant speed.',
+      steps: 'Click "Auto-Setup". The ball launches from the cannon mouth in a parabolic path trying to hit the target. Adjust gravity to see how it changes the landing spot!',
+      preset: 'projectile'
+    },
+    {
+      id: 'catapult',
+      title: '6. Catapult Physics Lever',
+      topic: 'Rotational Torque & Levers',
+      objective: 'Launch a projectile using counter-weight torque.',
+      explanation: 'Levers translate force. A heavy block falling on the short arm of a seesaw generates a rapid rotational torque that flings the light projectile on the long arm high into the air.',
+      steps: 'Click "Auto-Setup". The heavy block falls, flinging the red projectile sphere. Adjust block weight or spring constants to see how projectile distance is affected.',
+      preset: 'catapult'
+    },
+    {
+      id: 'bridge',
+      title: '7. Suspension Bridge Stress',
+      topic: 'Structural Mechanics',
+      objective: 'Analyse load stress on dynamic bridge planks.',
+      explanation: 'A suspension bridge distributes load across linked nodes. Adding weight to the center pulls on both anchor chains, demonstrating tension forces.',
+      steps: 'Click "Auto-Setup". A dynamic block drops onto the link planks of the bridge. Select planks to monitor how displacement scales under stress load.',
+      preset: 'bridge'
     }
   ];
 

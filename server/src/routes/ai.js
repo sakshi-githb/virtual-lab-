@@ -51,6 +51,28 @@ const getLocalResponse = (message, activePreset, selectedBody, isPlaying) => {
 3. **Inspect Restitution**: Click on either sphere and adjust the **Restitution** slider. 
 4. **Understand Restitution ($e$)**: It represents the ratio of relative speeds before and after a collision. A value of $e = 1.0$ is a perfectly elastic collision (zero kinetic energy loss), while $e = 0$ is a perfectly inelastic stick.`;
       insight = "Restitution governs the kinetic energy retention ratio after collision impacts.";
+    } else if (activePreset === 'projectile') {
+      responseText = `### 👨‍🏫 How to Perform the Projectile Motion Experiment:
+
+1. **Auto-Setup**: Click **Auto-Setup** under the **Projectile Cannon** template. This sets gravity to standard Earth (1.0) and places a cannon at the bottom left angled up.
+2. **Observe Launch**: When the simulation runs, the red ball launches at an initial velocity vector of (9, -7) in a parabolic trajectory towards the target basket.
+3. **Verify Kinematics**: Observe the shape of the flight path. The horizontal position increases linearly, while the vertical velocity decreases, halts, and accelerates downwards under gravity.
+4. **Tweak Variables**: Try changing the gravity constant in the Top Bar and see how the trajectory range increases or decreases!`;
+      insight = "Parabolic flight results from vertical gravity acceleration combined with horizontal constant velocity.";
+    } else if (activePreset === 'catapult') {
+      responseText = `### 👨‍🏫 How to Perform the Counterweight Catapult Experiment:
+
+1. **Auto-Setup**: Click **Auto-Setup** under the **Physics Catapult** template. This loads a lever seesaw arm pivot, a heavy counterweight block above the left end, and a light red ball on the right end.
+2. **Observe Torque**: The heavy block drops onto the left end, rotating the lever rapidly due to rotational torque ($\tau = F \times r$). This flings the light ball on the right arm high into the air.
+3. **Analyze Leverage**: The distance from the pivot determines mechanical advantage. Since the right arm is longer, the projectile gets launched with higher linear velocity!`;
+      insight = "Counterweight force creates torque that flings the projectile from the opposing end.";
+    } else if (activePreset === 'bridge') {
+      responseText = `### 👨‍🏫 How to Perform the Suspension Bridge Stress Experiment:
+
+1. **Auto-Setup**: Click **Auto-Setup** under the **Plank Bridge** template. This loads two solid platforms bridged by linked planks connected by elastic constraints.
+2. **Drop Load**: A heavy block falls onto the center planks, causing the bridge to sag and oscillate under tension.
+3. **Analyze Tensile Stress**: Planks near the center experience maximum downward displacement. The tension is distributed along the links to the static shore decks.`;
+      insight = "Tension forces distribute weight along linked elastic constraint nodes.";
     } else {
       responseText = `### 👨‍🏫 How to Get Started with the Sandbox:
 
@@ -101,6 +123,27 @@ You have loaded the **Collision Balls** template:
 - **Elastic vs Inelastic**: The yellow ball ($e = 0.90$) loses very little kinetic energy when colliding with the boundary walls, so it rebounds high. The blue ball ($e = 0.15$) loses almost all kinetic energy, converting it to heat/deformation, and stays near the floor.
 ${selectedBody ? `- **Inspection**: Selected **${selectedBody.labelName}** has restitution: **${selectedBody.restitution}**.` : '- **Tip**: Inspect either ball and modify its restitution to test elastic coefficients!'}`;
       insight = "Restitution coefficient (e) ranges from 0 (inelastic) to 1 (perfectly elastic).";
+    } else if (activePreset === 'projectile') {
+      responseText = `### 🔮 Current Simulation: Projectile Parabolic Motion
+
+You have loaded the **Projectile Cannon** template:
+- **Independent Velocities**: Horizontal speed ($v_x$) remains constant (ignoring drag). Vertical speed ($v_y$) is accelerated downwards by gravity ($a_y = -g$), producing a parabolic flight arc.
+- **Formulas**: Max horizontal range is $R = \frac{v^2 \sin(2\theta)}{g}$.`;
+      insight = "Projectile Range is inversely proportional to gravity: decreasing g increases range!";
+    } else if (activePreset === 'catapult') {
+      responseText = `### 🔮 Current Simulation: Rotational Catapult Lever
+
+You have loaded the **Physics Catapult** template:
+- **Torque Exchange**: The falling heavy block creates gravitational torque on the left lever: $\tau_1 = m_1 g r_1$. This rotates the arm, producing a high tangential velocity ($v = \omega r_2$) at the right tip, launching the ball.
+- **Mechanical Advantage**: Lever ratio is optimized to convert heavy weight fall speed into rapid projectile launch speed.`;
+      insight = "Torque (τ) is maximized when force is applied perpendicular to the arm length.";
+    } else if (activePreset === 'bridge') {
+      responseText = `### 🔮 Current Simulation: Suspension Bridge Load
+
+You have loaded the **Plank Bridge** template:
+- **Linked Nodes**: Seven dynamic planks are joined by elastic spring constraints.
+- **Tension Equilibrium**: The falling stress block transfers downward force into lateral tension forces pulling on the left and right anchor decks.`;
+      insight = "Elastic constraints behave like springs, oscillating until mechanical damping settles the load.";
     } else {
       responseText = `### 🔮 Current Simulation: Custom Rigid Body Sandbox
 
@@ -233,6 +276,9 @@ Formatting guidelines:
           else if (activePreset === 'spring') formulaInsight = "Hooke's Law: F = -kx";
           else if (activePreset === 'friction') formulaInsight = "Inclined plane: F = mg sin(θ)";
           else if (activePreset === 'bounciness') formulaInsight = "Restitution coefficient: e = rebound/approach";
+          else if (activePreset === 'projectile') formulaInsight = "Parabolic flight: y = x*tan(θ) - (g*x²)/(2*v²*cos²(θ))";
+          else if (activePreset === 'catapult') formulaInsight = "Rotational Torque: τ = F * r";
+          else if (activePreset === 'bridge') formulaInsight = "Stress Tension: T = F / 2*sin(θ)";
 
           res.status(200).json({
             speech: text,
@@ -282,6 +328,9 @@ Formatting guidelines:
           else if (activePreset === 'spring') formulaInsight = "Hooke's Law: F = -kx";
           else if (activePreset === 'friction') formulaInsight = "Inclined plane: F = mg sin(θ)";
           else if (activePreset === 'bounciness') formulaInsight = "Restitution coefficient: e = rebound/approach";
+          else if (activePreset === 'projectile') formulaInsight = "Parabolic flight: y = x*tan(θ) - (g*x²)/(2*v²*cos²(θ))";
+          else if (activePreset === 'catapult') formulaInsight = "Rotational Torque: τ = F * r";
+          else if (activePreset === 'bridge') formulaInsight = "Stress Tension: T = F / 2*sin(θ)";
 
           res.status(200).json({
             speech: text,

@@ -388,6 +388,292 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       }
     },
 
+    // Spawns a projectile motion cannon setup
+    spawnProjectileMotion: (cannonSyncId = null, projectileSyncId = null, targetSyncId = null, isRemote = false) => {
+      const engine = engineRef.current;
+      if (!engine) return;
+
+      const cId = cannonSyncId || `${Date.now()}-cannon-${Math.random().toString(36).substr(2, 9)}`;
+      const pId = projectileSyncId || `${Date.now()}-proj-${Math.random().toString(36).substr(2, 9)}`;
+      const tId = targetSyncId || `${Date.now()}-target-${Math.random().toString(36).substr(2, 9)}`;
+
+      // 1. Static Cannon Pipe
+      const cannon = Matter.Bodies.rectangle(120, 360, 80, 30, {
+        isStatic: true,
+        angle: -0.6, // tilt up
+        render: {
+          fillStyle: '#1A1A1A',
+          strokeStyle: '#1A1A1A'
+        }
+      });
+      cannon.syncId = cId;
+      cannon.labelName = "Cannon Base";
+      cannon.shapeType = 'box';
+      cannon.width = 80;
+      cannon.height = 30;
+
+      // 2. Dynamic Projectile Ball (Spawn at cannon mouth)
+      const ball = Matter.Bodies.circle(153, 338, 15, {
+        restitution: 0.3,
+        friction: 0.05,
+        render: {
+          fillStyle: '#EF4444', // brutalRed
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      ball.syncId = pId;
+      ball.labelName = "Cannon Ball";
+      ball.shapeType = 'circle';
+      ball.radius = 15;
+
+      // Set launch velocity
+      Matter.Body.setVelocity(ball, { x: 9, y: -7 });
+
+      // 3. Static Target Zone Basket
+      const target = Matter.Bodies.rectangle(600, 420, 80, 20, {
+        isStatic: true,
+        render: {
+          fillStyle: '#10B981', // brutalGreen
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      target.syncId = tId;
+      target.labelName = "Target Basket";
+      target.shapeType = 'box';
+      target.width = 80;
+      target.height = 20;
+
+      Matter.Composite.add(engine.world, [cannon, ball, target]);
+      selectBody(ball);
+
+      if (!isRemote && roomCodeRef.current && socketRef.current) {
+        socketRef.current.emit('physics:action', {
+          actionType: 'preset',
+          data: { presetType: 'projectile', cannonSyncId: cId, projectileSyncId: pId, targetSyncId: tId }
+        });
+      }
+    },
+
+    // Spawns a catapult lever launch setup
+    spawnCatapult: (baseSyncId = null, armSyncId = null, weightSyncId = null, projectileSyncId = null, isRemote = false) => {
+      const engine = engineRef.current;
+      if (!engine) return;
+
+      const bId = baseSyncId || `${Date.now()}-catbase-${Math.random().toString(36).substr(2, 9)}`;
+      const aId = armSyncId || `${Date.now()}-catarm-${Math.random().toString(36).substr(2, 9)}`;
+      const wId = weightSyncId || `${Date.now()}-catwt-${Math.random().toString(36).substr(2, 9)}`;
+      const pId = projectileSyncId || `${Date.now()}-catproj-${Math.random().toString(36).substr(2, 9)}`;
+
+      // 1. Static Pivot Base
+      const base = Matter.Bodies.circle(400, 400, 15, {
+        isStatic: true,
+        render: {
+          fillStyle: '#1A1A1A'
+        }
+      });
+      base.syncId = bId;
+      base.labelName = "Catapult Pivot";
+      base.shapeType = 'circle';
+      base.radius = 15;
+
+      // 2. Dynamic Arm Board (seesaw plank)
+      const arm = Matter.Bodies.rectangle(400, 400, 280, 15, {
+        density: 0.01,
+        render: {
+          fillStyle: '#FACC15', // brutalYellow
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      arm.syncId = aId;
+      arm.labelName = "Catapult Arm";
+      arm.shapeType = 'box';
+      arm.width = 280;
+      arm.height = 15;
+
+      // 3. Pin Constraint pinning the arm to the pivot
+      const pin = Matter.Constraint.create({
+        bodyA: base,
+        bodyB: arm,
+        stiffness: 1.0,
+        render: {
+          visible: true,
+          strokeStyle: '#1A1A1A',
+          lineWidth: 3
+        }
+      });
+
+      // 4. Heavy Block (counterweight) - Spawned high above left arm tip
+      const weight = Matter.Bodies.rectangle(270, 150, 60, 60, {
+        density: 0.05, // very heavy counterweight
+        render: {
+          fillStyle: '#3B82F6', // brutalBlue
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      weight.syncId = wId;
+      weight.labelName = "Counterweight";
+      weight.shapeType = 'box';
+      weight.width = 60;
+      weight.height = 60;
+
+      // 5. Light Projectile Ball on right arm tip
+      const projectile = Matter.Bodies.circle(530, 370, 16, {
+        density: 0.001, // lightweight
+        restitution: 0.5,
+        render: {
+          fillStyle: '#EF4444', // brutalRed
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      projectile.syncId = pId;
+      projectile.labelName = "Launched Ball";
+      projectile.shapeType = 'circle';
+      projectile.radius = 16;
+
+      Matter.Composite.add(engine.world, [base, arm, pin, weight, projectile]);
+      selectBody(projectile);
+
+      if (!isRemote && roomCodeRef.current && socketRef.current) {
+        socketRef.current.emit('physics:action', {
+          actionType: 'preset',
+          data: { presetType: 'catapult', baseSyncId: bId, armSyncId: aId, weightSyncId: wId, projectileSyncId: pId }
+        });
+      }
+    },
+
+    // Spawns a suspension bridge stress setup
+    spawnBridge: (leftPlatformSyncId = null, rightPlatformSyncId = null, loadBlockSyncId = null, plankIds = [], isRemote = false) => {
+      const engine = engineRef.current;
+      if (!engine) return;
+
+      const lpId = leftPlatformSyncId || `${Date.now()}-brlplat-${Math.random().toString(36).substr(2, 9)}`;
+      const rpId = rightPlatformSyncId || `${Date.now()}-brrplat-${Math.random().toString(36).substr(2, 9)}`;
+      const lbId = loadBlockSyncId || `${Date.now()}-brload-${Math.random().toString(36).substr(2, 9)}`;
+
+      // 1. Static left Platform
+      const leftPlat = Matter.Bodies.rectangle(140, 280, 100, 30, {
+        isStatic: true,
+        render: { fillStyle: '#1A1A1A' }
+      });
+      leftPlat.syncId = lpId;
+      leftPlat.labelName = "Left Deck";
+      leftPlat.shapeType = 'box';
+      leftPlat.width = 100;
+      leftPlat.height = 30;
+
+      // 2. Static right Platform
+      const rightPlat = Matter.Bodies.rectangle(660, 280, 100, 30, {
+        isStatic: true,
+        render: { fillStyle: '#1A1A1A' }
+      });
+      rightPlat.syncId = rpId;
+      rightPlat.labelName = "Right Deck";
+      rightPlat.shapeType = 'box';
+      rightPlat.width = 100;
+      rightPlat.height = 30;
+
+      // 3. Plank Chain
+      const plankCount = 7;
+      const plankWidth = 50;
+      const plankHeight = 12;
+      const startX = 220;
+      const gap = 60;
+      const y = 280;
+
+      const planks = [];
+      const constraints = [];
+
+      for (let i = 0; i < plankCount; i++) {
+        const px = startX + i * gap;
+        const plank = Matter.Bodies.rectangle(px, y, plankWidth, plankHeight, {
+          restitution: 0.1,
+          friction: 0.2,
+          density: 0.005,
+          render: {
+            fillStyle: '#FACC15', // brutalYellow
+            strokeStyle: '#1A1A1A',
+            lineWidth: 3
+          }
+        });
+        plank.syncId = (plankIds && plankIds[i]) || `${Date.now()}-plank-${i}-${Math.random().toString(36).substr(2, 9)}`;
+        plank.labelName = `Plank #${i + 1}`;
+        plank.shapeType = 'box';
+        plank.width = plankWidth;
+        plank.height = plankHeight;
+        planks.push(plank);
+      }
+
+      // Link left platform to first plank
+      constraints.push(Matter.Constraint.create({
+        bodyA: leftPlat,
+        pointB: { x: -plankWidth / 2, y: 0 },
+        bodyB: planks[0],
+        stiffness: 0.7,
+        length: 25,
+        render: { strokeStyle: '#1A1A1A', lineWidth: 3 }
+      }));
+
+      // Link planks consecutively
+      for (let i = 0; i < plankCount - 1; i++) {
+        constraints.push(Matter.Constraint.create({
+          bodyA: planks[i],
+          pointA: { x: plankWidth / 2, y: 0 },
+          bodyB: planks[i + 1],
+          pointB: { x: -plankWidth / 2, y: 0 },
+          stiffness: 0.7,
+          length: 12,
+          render: { strokeStyle: '#1A1A1A', lineWidth: 3 }
+        }));
+      }
+
+      // Link last plank to right platform
+      constraints.push(Matter.Constraint.create({
+        bodyA: planks[plankCount - 1],
+        pointA: { x: plankWidth / 2, y: 0 },
+        bodyB: rightPlat,
+        stiffness: 0.7,
+        length: 25,
+        render: { strokeStyle: '#1A1A1A', lineWidth: 3 }
+      }));
+
+      // 4. Heavy Load Block dropped onto center plank
+      const load = Matter.Bodies.rectangle(400, 100, 45, 45, {
+        density: 0.02,
+        render: {
+          fillStyle: '#EF4444', // brutalRed
+          strokeStyle: '#1A1A1A',
+          lineWidth: 4
+        }
+      });
+      load.syncId = lbId;
+      load.labelName = "Stress Weight";
+      load.shapeType = 'box';
+      load.width = 45;
+      load.height = 45;
+
+      const elementsToAdd = [leftPlat, rightPlat, ...planks, ...constraints, load];
+      Matter.Composite.add(engine.world, elementsToAdd);
+      selectBody(load);
+
+      if (!isRemote && roomCodeRef.current && socketRef.current) {
+        socketRef.current.emit('physics:action', {
+          actionType: 'preset',
+          data: { 
+            presetType: 'bridge', 
+            leftPlatformSyncId: lpId, 
+            rightPlatformSyncId: rpId, 
+            loadBlockSyncId: lbId,
+            plankIds: planks.map(p => p.syncId)
+          }
+        });
+      }
+    },
+
     // Controls: Play / Pause
     setRunning: (isRunning) => {
       const runner = runnerRef.current;
@@ -670,6 +956,12 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
             ref.current?.spawnPendulum(data.x, data.y, data.pivotSyncId, data.bobSyncId, true);
           } else if (data.presetType === 'spring') {
             ref.current?.spawnSpringBlock(data.x, data.y, data.anchorSyncId, data.blockSyncId, true);
+          } else if (data.presetType === 'projectile') {
+            ref.current?.spawnProjectileMotion(data.cannonSyncId, data.projectileSyncId, data.targetSyncId, true);
+          } else if (data.presetType === 'catapult') {
+            ref.current?.spawnCatapult(data.baseSyncId, data.armSyncId, data.weightSyncId, data.projectileSyncId, true);
+          } else if (data.presetType === 'bridge') {
+            ref.current?.spawnBridge(data.leftPlatformSyncId, data.rightPlatformSyncId, data.loadBlockSyncId, data.plankIds, true);
           }
           break;
         case 'reset':

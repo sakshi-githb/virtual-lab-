@@ -30,6 +30,9 @@ const LeftToolbar = ({
     { id: 'spring', name: 'Spring Mass', action: () => onSpawnPreset('spring') },
     { id: 'friction', name: 'Friction Ramp', action: () => onSpawnPreset('friction') },
     { id: 'bounciness', name: 'Collision Balls', action: () => onSpawnPreset('bounciness') },
+    { id: 'projectile', name: 'Projectile Cannon', action: () => onSpawnPreset('projectile') },
+    { id: 'catapult', name: 'Physics Catapult', action: () => onSpawnPreset('catapult') },
+    { id: 'bridge', name: 'Plank Bridge', action: () => onSpawnPreset('bridge') },
   ];
 
   const colors = [

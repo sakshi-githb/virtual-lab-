@@ -169,6 +169,18 @@ function App() {
       canvasRef.current.spawnBouncingComparison();
       canvasRef.current.setGravity(1.0); // Standard Earth gravity
       showNotification('Elastic vs Inelastic collision spheres injected', 'success');
+    } else if (presetType === 'projectile') {
+      canvasRef.current.spawnProjectileMotion();
+      canvasRef.current.setGravity(1.0);
+      showNotification('Projectile cannon and target basket loaded', 'success');
+    } else if (presetType === 'catapult') {
+      canvasRef.current.spawnCatapult();
+      canvasRef.current.setGravity(1.0);
+      showNotification('Counterweight lever catapult loaded', 'success');
+    } else if (presetType === 'bridge') {
+      canvasRef.current.spawnBridge();
+      canvasRef.current.setGravity(1.0);
+      showNotification('Suspension plank bridge deck loaded', 'success');
     }
 
     setSelectedTool('select');
