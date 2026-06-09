@@ -39,6 +39,32 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     roomCodeRef.current = roomCode;
   }, [socket, roomCode]);
 
+  const performResetWorld = (isRemote = false) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    // Selectively remove all bodies except the outer boundary walls
+    const bodiesToRemove = engine.world.bodies.filter(b => !b.isBoundary);
+    Matter.Composite.remove(engine.world, bodiesToRemove);
+
+    // Selectively remove all constraints except the mouse grabbing constraint itself
+    if (mouseConstraintRef.current) {
+      const constraintsToRemove = engine.world.constraints.filter(
+        c => c !== mouseConstraintRef.current && c !== mouseConstraintRef.current.constraint
+      );
+      Matter.Composite.remove(engine.world, constraintsToRemove);
+    } else {
+      Matter.Composite.clear(engine.world, false);
+    }
+    
+    selectedBodyRef.current = null;
+    onSelectBody(null);
+
+    if (!isRemote && roomCodeRef.current && socketRef.current) {
+      socketRef.current.emit('physics:action', { actionType: 'reset', data: {} });
+    }
+  };
+
   useImperativeHandle(ref, () => ({
     // Spawns a box body
     spawnBox: (x = 400, y = 150, width = 60, height = 60, isStatic = false, syncId = null, color = null, isRemote = false) => {
@@ -61,6 +87,8 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       box.labelName = `Box #${engine.world.bodies.filter(b => b.shapeType === 'box').length + 1}`;
       box.customColor = fillStyle;
       box.shapeType = 'box';
+      box.width = width;
+      box.height = height;
 
       Matter.Composite.add(engine.world, box);
       selectBody(box);
@@ -93,6 +121,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       circle.labelName = `Circle #${engine.world.bodies.filter(b => b.shapeType === 'circle').length + 1}`;
       circle.customColor = fillStyle;
       circle.shapeType = 'circle';
+      circle.radius = radius;
 
       Matter.Composite.add(engine.world, circle);
       selectBody(circle);
@@ -126,6 +155,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       poly.customColor = fillStyle;
       poly.shapeType = 'polygon';
       poly.sidesCount = sides;
+      poly.radius = radius;
 
       Matter.Composite.add(engine.world, poly);
       selectBody(poly);
@@ -170,6 +200,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       bob.labelName = "Pendulum Bob";
       bob.shapeType = 'circle';
       bob.syncId = actualBobId;
+      bob.radius = radius;
 
       // 3. Elastic spring constraint (acts as cable)
       const constraint = Matter.Constraint.create({
@@ -222,6 +253,8 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       block.labelName = "Spring Block";
       block.shapeType = 'box';
       block.syncId = actualBlockId;
+      block.width = 50;
+      block.height = 50;
 
       // 3. Spring constraint (horizontal) with explicit resting length
       const spring = Matter.Constraint.create({
@@ -269,6 +302,8 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       });
       ramp.syncId = rampSyncId;
       ramp.labelName = "Inclined Plane";
+      ramp.width = 350;
+      ramp.height = 20;
 
       // 2. Dynamic sliding block on top
       const block = Matter.Bodies.rectangle(300, 200, 45, 45, {
@@ -284,6 +319,8 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       block.syncId = blockSyncId;
       block.labelName = "Sliding Block";
       block.shapeType = 'box';
+      block.width = 45;
+      block.height = 45;
 
       Matter.Composite.add(engine.world, [ramp, block]);
       selectBody(block);
@@ -317,6 +354,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       ballA.syncId = ballASyncId;
       ballA.labelName = "Bouncy Ball (Elastic)";
       ballA.shapeType = 'circle';
+      ballA.radius = 25;
 
       // 2. Ball B (Inelastic - Dull)
       const ballB = Matter.Bodies.circle(500, 100, 25, {
@@ -331,6 +369,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       ballB.syncId = ballBSyncId;
       ballB.labelName = "Lead Ball (Inelastic)";
       ballB.shapeType = 'circle';
+      ballB.radius = 25;
 
       Matter.Composite.add(engine.world, [ballA, ballB]);
       selectBody(ballA);
@@ -360,28 +399,102 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
 
     // Controls: Reset world
     resetWorld: (isRemote = false) => {
+      performResetWorld(isRemote);
+    },
+
+    // Serializes the current active canvas state (ignoring static borders)
+    serializeWorld: () => {
+      const engine = engineRef.current;
+      if (!engine) return { gravityY: 1.0, bodies: [] };
+
+      const activeBodies = engine.world.bodies.filter(b => !b.isBoundary);
+      
+      const serialized = activeBodies.map(b => {
+        const shapeType = b.shapeType || 'polygon';
+        return {
+          syncId: b.syncId || `${Date.now()}-${shapeType}-${Math.random().toString(36).substr(2, 9)}`,
+          labelName: b.labelName || b.label,
+          shapeType: shapeType,
+          x: b.position.x,
+          y: b.position.y,
+          vx: b.velocity ? b.velocity.x : 0,
+          vy: b.velocity ? b.velocity.y : 0,
+          width: b.width || null,
+          height: b.height || null,
+          radius: b.radius || null,
+          sides: b.sidesCount || null,
+          mass: b.mass,
+          friction: b.friction,
+          restitution: b.restitution,
+          isStatic: b.isStatic,
+          color: b.customColor || b.render.fillStyle
+        };
+      });
+
+      return {
+        gravityY: engine.gravity.y,
+        bodies: serialized
+      };
+    },
+
+    // Deserializes a loaded layout into Matter.js engine world
+    deserializeWorld: (bodiesList, gravityY = 1.0, isRemote = false) => {
       const engine = engineRef.current;
       if (!engine) return;
 
-      // Selectively remove all bodies except the outer boundary walls
-      const bodiesToRemove = engine.world.bodies.filter(b => !b.isBoundary);
-      Matter.Composite.remove(engine.world, bodiesToRemove);
+      performResetWorld(isRemote);
 
-      // Selectively remove all constraints except the mouse grabbing constraint itself
-      if (mouseConstraintRef.current) {
-        const constraintsToRemove = engine.world.constraints.filter(
-          c => c !== mouseConstraintRef.current && c !== mouseConstraintRef.current.constraint
-        );
-        Matter.Composite.remove(engine.world, constraintsToRemove);
-      } else {
-        Matter.Composite.clear(engine.world, false);
-      }
-      
-      selectedBodyRef.current = null;
-      onSelectBody(null);
+      engine.gravity.y = parseFloat(gravityY !== undefined ? gravityY : 1.0);
+
+      bodiesList.forEach(b => {
+        let body;
+        const fillStyle = b.color || '#FACC15';
+        const bodyOptions = {
+          isStatic: b.isStatic,
+          restitution: b.restitution !== undefined ? b.restitution : 0.5,
+          friction: b.friction !== undefined ? b.friction : 0.1,
+          render: {
+            fillStyle: fillStyle,
+            strokeStyle: '#1A1A1A',
+            lineWidth: 4
+          }
+        };
+
+        if (b.shapeType === 'box') {
+          body = Matter.Bodies.rectangle(b.x, b.y, b.width || 60, b.height || 60, bodyOptions);
+          body.width = b.width || 60;
+          body.height = b.height || 60;
+        } else if (b.shapeType === 'circle') {
+          body = Matter.Bodies.circle(b.x, b.y, b.radius || 30, bodyOptions);
+          body.radius = b.radius || 30;
+        } else if (b.shapeType === 'polygon') {
+          body = Matter.Bodies.polygon(b.x, b.y, b.sides || 5, b.radius || 40, bodyOptions);
+          body.sidesCount = b.sides || 5;
+          body.radius = b.radius || 40;
+        }
+
+        if (body) {
+          body.syncId = b.syncId || `${Date.now()}-${b.shapeType}-${Math.random().toString(36).substr(2, 9)}`;
+          body.labelName = b.labelName || `${b.shapeType} #${engine.world.bodies.length + 1}`;
+          body.customColor = fillStyle;
+          body.shapeType = b.shapeType;
+
+          if (b.mass !== undefined && b.mass !== null) {
+            Matter.Body.setMass(body, parseFloat(b.mass));
+          }
+          if (b.vx !== undefined && b.vy !== undefined && b.vx !== null && b.vy !== null) {
+            Matter.Body.setVelocity(body, { x: parseFloat(b.vx), y: parseFloat(b.vy) });
+          }
+
+          Matter.Composite.add(engine.world, body);
+        }
+      });
 
       if (!isRemote && roomCodeRef.current && socketRef.current) {
-        socketRef.current.emit('physics:action', { actionType: 'reset', data: {} });
+        socketRef.current.emit('physics:action', {
+          actionType: 'loadLayout',
+          data: { gravityY, bodies: bodiesList }
+        });
       }
     },
 
@@ -553,6 +666,9 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
             Matter.Body.setPosition(draggedBody, { x: data.x, y: data.y });
             Matter.Body.setVelocity(draggedBody, { x: 0, y: 0 }); // stop velocity during drag
           }
+          break;
+        case 'loadLayout':
+          ref.current?.deserializeWorld(data.bodies, data.gravityY, true);
           break;
         default:
           break;

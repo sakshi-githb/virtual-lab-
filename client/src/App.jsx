@@ -9,6 +9,7 @@ import Portal from './components/auth/Portal';
 import AuthModal from './components/auth/AuthModal';
 import AIProf from './components/panels/AIProf';
 import AnalyticsModal from './components/panels/AnalyticsModal';
+import LibraryModal from './components/panels/LibraryModal';
 import { useSocket } from './context/SocketContext';
 import { 
   Save, 
@@ -49,6 +50,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [activePreset, setActivePreset] = useState('none');
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [user, setUser] = useState(null); 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -189,12 +191,46 @@ function App() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user || user.role === 'guest') {
       showNotification('Guest notebooks are archived locally. Register a premium account to sync in the cloud MongoDB cluster!', 'error');
       return;
     }
-    showNotification(`Saved Sandbox: "${labMode === 'solo' ? 'My Physics Lab' : 'Newton\'s Den'}" successfully archived to MongoDB!`, 'success');
+
+    if (!canvasRef.current) return;
+
+    const title = window.prompt("Enter a title for your physics experiment layout:", "My Physics Rig");
+    if (!title || !title.trim()) {
+      return; // cancelled or empty
+    }
+
+    const serialized = canvasRef.current.serializeWorld();
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/experiments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          gravityY: serialized.gravityY,
+          bodies: serialized.bodies
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to save experiment layout');
+      }
+
+      showNotification(`Layout "${title.trim()}" successfully saved to cloud MongoDB!`, 'success');
+    } catch (error) {
+      console.error(error);
+      showNotification(error.message, 'error');
+    }
   };
 
   const handleLoad = () => {
@@ -202,7 +238,15 @@ function App() {
       showNotification('Guests can load cached sessions only. Log in for database cloud fetching.', 'error');
       return;
     }
-    showNotification('Loaded latest experimental layout from Cloud Database.', 'success');
+    setIsLibraryOpen(true);
+  };
+
+  const handleLoadExperiment = (experiment) => {
+    if (canvasRef.current && experiment) {
+      canvasRef.current.deserializeWorld(experiment.bodies, experiment.gravityY);
+      showNotification(`Loaded layout: "${experiment.title}"`, 'success');
+      setIsLibraryOpen(false);
+    }
   };
 
   // Render Portal if on landing page
@@ -363,6 +407,12 @@ function App() {
           isOpen={isAnalyticsOpen}
           onClose={() => setIsAnalyticsOpen(false)}
           canvasRef={canvasRef}
+        />
+        <LibraryModal
+          isOpen={isLibraryOpen}
+          onClose={() => setIsLibraryOpen(false)}
+          onLoad={handleLoadExperiment}
+          showNotification={showNotification}
         />
       </div>
     </div>
