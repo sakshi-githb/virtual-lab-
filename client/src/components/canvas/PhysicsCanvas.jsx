@@ -21,9 +21,16 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     button: -1,
     bodies: 0,
     ticks: 0,
-    selected: 'None'
+    selected: 'None',
+    latency: undefined
   });
   const tickCountRef = useRef(0);
+
+  const [lagMs, setLagMs] = useState(0);
+  const lagMsRef = useRef(0);
+  useEffect(() => {
+    lagMsRef.current = lagMs;
+  }, [lagMs]);
 
   // Consume WebSockets hooks for collaboration sync
   const socketContext = useSocket();
@@ -33,11 +40,13 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
 
   const socketRef = useRef(null);
   const roomCodeRef = useRef(null);
+  const isHostRef = useRef(isHost);
 
   useEffect(() => {
     socketRef.current = socket;
     roomCodeRef.current = roomCode;
-  }, [socket, roomCode]);
+    isHostRef.current = isHost;
+  }, [socket, roomCode, isHost]);
 
   const performResetWorld = (isRemote = false) => {
     const engine = engineRef.current;
@@ -937,82 +946,190 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     if (!socket || !roomCode) return;
 
     // Listen to remote actions (spawn, preset, reset, property updates, drag)
-    const handleIncomingAction = ({ actionType, data }) => {
-      const engine = engineRef.current;
-      if (!engine) return;
+    const handleIncomingAction = (payload) => {
+      const executeAction = () => {
+        const { actionType, data } = payload;
+        const engine = engineRef.current;
+        if (!engine) return;
 
-      switch (actionType) {
-        case 'spawn':
-          if (data.shapeType === 'box') {
-            ref.current?.spawnBox(data.x, data.y, data.width, data.height, data.isStatic, data.syncId, data.color, true);
-          } else if (data.shapeType === 'circle') {
-            ref.current?.spawnCircle(data.x, data.y, data.radius, data.syncId, data.color, true);
-          } else if (data.shapeType === 'polygon') {
-            ref.current?.spawnPolygon(data.x, data.y, data.sides, data.radius, data.syncId, data.color, true);
-          }
-          break;
-        case 'preset':
-          if (data.presetType === 'pendulum') {
-            ref.current?.spawnPendulum(data.x, data.y, data.pivotSyncId, data.bobSyncId, true);
-          } else if (data.presetType === 'spring') {
-            ref.current?.spawnSpringBlock(data.x, data.y, data.anchorSyncId, data.blockSyncId, true);
-          } else if (data.presetType === 'projectile') {
-            ref.current?.spawnProjectileMotion(data.cannonSyncId, data.projectileSyncId, data.targetSyncId, true);
-          } else if (data.presetType === 'catapult') {
-            ref.current?.spawnCatapult(data.baseSyncId, data.armSyncId, data.weightSyncId, data.projectileSyncId, true);
-          } else if (data.presetType === 'bridge') {
-            ref.current?.spawnBridge(data.leftPlatformSyncId, data.rightPlatformSyncId, data.loadBlockSyncId, data.plankIds, true);
-          }
-          break;
-        case 'reset':
-          ref.current?.resetWorld(true);
-          break;
-        case 'updateProperty':
-          ref.current?.updateBodyPropertyBySyncId(data.syncId, data.key, data.value);
-          break;
-        case 'drag':
-          const draggedBody = engine.world.bodies.find(b => b.syncId === data.syncId);
-          if (draggedBody) {
-            Matter.Body.setPosition(draggedBody, { x: data.x, y: data.y });
-            Matter.Body.setVelocity(draggedBody, { x: 0, y: 0 }); // stop velocity during drag
-          }
-          break;
-        case 'loadLayout':
-          ref.current?.deserializeWorld(data.bodies, data.gravityY, true);
-          break;
-        default:
-          break;
+        switch (actionType) {
+          case 'spawn':
+            if (data.shapeType === 'box') {
+              ref.current?.spawnBox(data.x, data.y, data.width, data.height, data.isStatic, data.syncId, data.color, true);
+            } else if (data.shapeType === 'circle') {
+              ref.current?.spawnCircle(data.x, data.y, data.radius, data.syncId, data.color, true);
+            } else if (data.shapeType === 'polygon') {
+              ref.current?.spawnPolygon(data.x, data.y, data.sides, data.radius, data.syncId, data.color, true);
+            }
+            break;
+          case 'preset':
+            if (data.presetType === 'pendulum') {
+              ref.current?.spawnPendulum(data.x, data.y, data.pivotSyncId, data.bobSyncId, true);
+            } else if (data.presetType === 'spring') {
+              ref.current?.spawnSpringBlock(data.x, data.y, data.anchorSyncId, data.blockSyncId, true);
+            } else if (data.presetType === 'projectile') {
+              ref.current?.spawnProjectileMotion(data.cannonSyncId, data.projectileSyncId, data.targetSyncId, true);
+            } else if (data.presetType === 'catapult') {
+              ref.current?.spawnCatapult(data.baseSyncId, data.armSyncId, data.weightSyncId, data.projectileSyncId, true);
+            } else if (data.presetType === 'bridge') {
+              ref.current?.spawnBridge(data.leftPlatformSyncId, data.rightPlatformSyncId, data.loadBlockSyncId, data.plankIds, true);
+            }
+            break;
+          case 'reset':
+            ref.current?.resetWorld(true);
+            break;
+          case 'updateProperty':
+            ref.current?.updateBodyPropertyBySyncId(data.syncId, data.key, data.value);
+            break;
+          case 'drag':
+            const draggedBody = engine.world.bodies.find(b => b.syncId === data.syncId);
+            if (draggedBody) {
+              Matter.Body.setPosition(draggedBody, { x: data.x, y: data.y });
+              Matter.Body.setVelocity(draggedBody, { x: 0, y: 0 }); // stop velocity during drag
+            }
+            break;
+          case 'dragstart':
+            const bodyToLock = engine.world.bodies.find(b => b.syncId === data.syncId);
+            if (bodyToLock) {
+              bodyToLock.draggedBy = data.dragUserId;
+              bodyToLock.originalStrokeColor = bodyToLock.render.strokeStyle;
+              bodyToLock.originalLineWidth = bodyToLock.render.lineWidth;
+              bodyToLock.render.strokeStyle = '#EF4444'; // Neo-Brutalist red outline
+              bodyToLock.render.lineWidth = 4;
+            }
+            break;
+          case 'dragend':
+            const bodyToUnlock = engine.world.bodies.find(b => b.syncId === data.syncId);
+            if (bodyToUnlock) {
+              bodyToUnlock.draggedBy = null;
+              bodyToUnlock.render.strokeStyle = bodyToUnlock.originalStrokeColor || '#1A1A1A';
+              bodyToUnlock.render.lineWidth = bodyToUnlock.originalLineWidth || 2;
+            }
+            break;
+          case 'loadLayout':
+            ref.current?.deserializeWorld(data.bodies, data.gravityY, true);
+            break;
+          default:
+            break;
+        }
+      };
+
+      if (lagMsRef.current > 0) {
+        setTimeout(executeAction, lagMsRef.current);
+      } else {
+        executeAction();
       }
     };
 
     // Listen to Host high-frequency coordinate sync
     const handleIncomingSync = (syncData) => {
-      if (isHost) return; // Host has authority, ignores sync updates
+      const executeSync = () => {
+        if (isHost) return; // Host has authority, ignores sync updates
 
+        const engine = engineRef.current;
+        if (!engine) return;
+
+        syncData.bodies.forEach(b => {
+          const localBody = engine.world.bodies.find(l => l.syncId === b.syncId);
+          if (localBody) {
+            // If this body is currently being dragged by the local user, do not let host positions snap it back
+            if (mouseConstraintRef.current && mouseConstraintRef.current.body === localBody) {
+              return;
+            }
+            // Store interpolation target parameters
+            localBody.targetX = b.x;
+            localBody.targetY = b.y;
+            localBody.targetAngle = b.angle;
+            // Set velocity immediately to keep collision calculations active
+            Matter.Body.setVelocity(localBody, { x: b.vx, y: b.vy });
+          }
+        });
+      };
+
+      if (lagMsRef.current > 0) {
+        setTimeout(executeSync, lagMsRef.current);
+      } else {
+        executeSync();
+      }
+    };
+
+    // Host handlers for spectator late join requests
+    const handleRequestState = ({ requesterSocketId }) => {
+      if (!isHost) return;
       const engine = engineRef.current;
       if (!engine) return;
 
-      syncData.bodies.forEach(b => {
-        const localBody = engine.world.bodies.find(l => l.syncId === b.syncId);
-        if (localBody) {
-          // If this body is currently being dragged by the local user, do not let host positions snap it back
-          if (mouseConstraintRef.current && mouseConstraintRef.current.body === localBody) {
-            return;
-          }
-          Matter.Body.setPosition(localBody, { x: b.x, y: b.y });
-          Matter.Body.setAngle(localBody, b.angle);
-          Matter.Body.setVelocity(localBody, { x: b.vx, y: b.vy });
+      const bodiesData = engine.world.bodies
+        .filter(b => b.syncId && !b.isStatic && !b.isBoundary)
+        .map(b => ({
+          syncId: b.syncId,
+          labelName: b.labelName || 'Rigid Body',
+          shapeType: b.shapeType || 'box',
+          x: b.position.x,
+          y: b.position.y,
+          width: b.width || null,
+          height: b.height || null,
+          radius: b.radius || null,
+          sides: b.sidesCount || null,
+          mass: b.mass,
+          friction: b.friction,
+          restitution: b.restitution,
+          isStatic: b.isStatic,
+          color: b.customColor || '#FACC15'
+        }));
+
+      socket.emit('physics:state-response', {
+        requesterSocketId,
+        state: {
+          bodies: bodiesData,
+          gravityY: engine.gravity.y
         }
       });
     };
 
+    const handleStateResponse = (state) => {
+      if (isHost) return;
+      ref.current?.deserializeWorld(state.bodies, state.gravityY, true);
+    };
+
     socket.on('physics:action', handleIncomingAction);
     socket.on('physics:sync', handleIncomingSync);
+    socket.on('physics:request-state', handleRequestState);
+    socket.on('physics:state-response', handleStateResponse);
 
     return () => {
       socket.off('physics:action', handleIncomingAction);
       socket.off('physics:sync', handleIncomingSync);
+      socket.off('physics:request-state', handleRequestState);
+      socket.off('physics:state-response', handleStateResponse);
     };
+  }, [socket, roomCode, isHost]);
+
+  // Heartbeat to monitor real network RTT latency
+  useEffect(() => {
+    if (!socket || !roomCode) return;
+
+    const pingInterval = setInterval(() => {
+      socket.emit('ping:send', { timestamp: Date.now() });
+    }, 2000);
+
+    const handlePingReply = ({ timestamp }) => {
+      const rtt = Date.now() - timestamp;
+      setDebugInfo(prev => ({ ...prev, latency: rtt }));
+    };
+
+    socket.on('ping:reply', handlePingReply);
+
+    return () => {
+      clearInterval(pingInterval);
+      socket.off('ping:reply', handlePingReply);
+    };
+  }, [socket, roomCode]);
+
+  // Spectator initial catchup state recovery request
+  useEffect(() => {
+    if (!socket || !roomCode || isHost) return;
+    socket.emit('physics:request-state');
   }, [socket, roomCode, isHost]);
 
   // Host High-Frequency Sync Broadcaster (~30Hz)
@@ -1130,6 +1247,12 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       const validBody = clickedBodies.find(b => !b.isBoundary);
       
       if (validBody) {
+        if (validBody.draggedBy && validBody.draggedBy !== socketRef.current?.id) {
+          // Locked by another user, release constraint immediately
+          mouseConstraint.constraint.bodyB = null;
+          mouseConstraint.body = null;
+          return;
+        }
         selectBody(validBody);
       } else {
         selectedBodyRef.current = null;
@@ -1137,15 +1260,86 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       }
     });
 
+    // Conflict Resolution - Grab / Release Drag Lock events
+    Matter.Events.on(mouseConstraint, 'startdrag', (event) => {
+      const body = event.body;
+      if (body && body.syncId) {
+        if (body.draggedBy && body.draggedBy !== socketRef.current?.id) {
+          // Locked by another user, release constraint immediately
+          mouseConstraint.constraint.bodyB = null;
+          mouseConstraint.body = null;
+          return;
+        }
+        // Acquire local drag lock
+        body.draggedBy = socketRef.current?.id;
+        if (socketRef.current && roomCodeRef.current) {
+          socketRef.current.emit('physics:action', {
+            actionType: 'dragstart',
+            data: { syncId: body.syncId, dragUserId: socketRef.current.id }
+          });
+        }
+      }
+    });
+
+    Matter.Events.on(mouseConstraint, 'enddrag', (event) => {
+      const body = event.body;
+      if (body && body.syncId) {
+        if (body.draggedBy === socketRef.current?.id) {
+          body.draggedBy = null;
+          if (socketRef.current && roomCodeRef.current) {
+            socketRef.current.emit('physics:action', {
+              actionType: 'dragend',
+              data: { syncId: body.syncId }
+            });
+          }
+        }
+      }
+    });
+
     // Relay active cursor dragging on mouse move if a body is being held
     Matter.Events.on(mouseConstraint, 'mousemove', () => {
       const body = mouseConstraint.body;
       if (body && body.syncId && socketRef.current && roomCodeRef.current) {
+        if (body.draggedBy && body.draggedBy !== socketRef.current?.id) {
+          // Safety fallback if mousemove triggers on locked body
+          mouseConstraint.constraint.bodyB = null;
+          mouseConstraint.body = null;
+          return;
+        }
         socketRef.current.emit('physics:action', {
           actionType: 'drag',
           data: { syncId: body.syncId, x: body.position.x, y: body.position.y }
         });
       }
+    });
+
+    // Linear interpolation loop (lerping client-side positions at 60Hz)
+    Matter.Events.on(engine, 'beforeUpdate', () => {
+      if (isHostRef.current) return;
+      const bodies = Matter.Composite.allBodies(engine.world);
+      bodies.forEach(body => {
+        if (body.targetX !== undefined && body.targetY !== undefined) {
+          const dx = body.targetX - body.position.x;
+          const dy = body.targetY - body.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 150) {
+            // Teleport instantly if displacement is large (e.g. simulation reset / template load)
+            Matter.Body.setPosition(body, { x: body.targetX, y: body.targetY });
+            Matter.Body.setAngle(body, body.targetAngle);
+          } else {
+            // Smoothly lerp coordinates (0.25 interpolation rate)
+            const newX = body.position.x + dx * 0.25;
+            const newY = body.position.y + dy * 0.25;
+            Matter.Body.setPosition(body, { x: newX, y: newY });
+            
+            // Lerp rotation angle
+            const da = body.targetAngle - body.angle;
+            const newAngle = body.angle + da * 0.25;
+            Matter.Body.setAngle(body, newAngle);
+          }
+        }
+      });
     });
 
     // 7. Dynamic UI Tick Updates
@@ -1256,7 +1450,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
         </div>
 
         {/* Diagnostic Debug HUD (Brutal styled) */}
-        <div className="absolute bottom-4 left-4 bg-white border-3 border-charcoal p-2.5 font-mono text-[9px] z-50 shadow-brutal-sm pointer-events-none select-none text-left flex flex-col gap-0.5">
+        <div className="absolute bottom-4 left-4 bg-white border-3 border-charcoal p-2.5 font-mono text-[9px] z-50 shadow-brutal-sm pointer-events-auto select-none text-left flex flex-col gap-0.5">
           <div className="font-extrabold uppercase border-b-2 border-charcoal/20 pb-1 mb-1 text-[10px]">🛠️ Debug HUD</div>
           <div>Size: {debugInfo.w}x{debugInfo.h}</div>
           <div>Mouse: ({debugInfo.mouseX}, {debugInfo.mouseY})</div>
@@ -1264,6 +1458,30 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
           <div>Bodies: {debugInfo.bodies}</div>
           <div>Ticks: {debugInfo.ticks}</div>
           <div>Selected: {debugInfo.selected}</div>
+          {roomCode && (
+            <>
+              <div className="border-t border-charcoal/10 mt-1 pt-1 font-bold text-blue-600">MULTIPLAYER STATE:</div>
+              <div>Role: {isHost ? 'Host (Authoritative)' : 'Spectator'}</div>
+              <div>Room Code: {roomCode}</div>
+              <div>Latency (RTT): {debugInfo.latency !== undefined ? `${debugInfo.latency}ms` : 'Calculating...'}</div>
+              <div className="border-t border-charcoal/10 mt-1 pt-1 font-bold text-purple-600">LAG SIMULATOR:</div>
+              <div className="flex gap-1 mt-0.5">
+                {[0, 150, 300, 500].map(ms => (
+                  <button
+                    key={ms}
+                    onClick={() => setLagMs(ms)}
+                    className={`px-1 py-0.5 border border-charcoal font-bold cursor-pointer transition-all active:scale-95 text-[8px] ${
+                      lagMs === ms 
+                        ? 'bg-purple-500 text-white shadow-none' 
+                        : 'bg-white text-charcoal hover:bg-purple-100 shadow-brutal-sm'
+                    }`}
+                  >
+                    {ms}ms
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

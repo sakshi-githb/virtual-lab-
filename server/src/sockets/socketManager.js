@@ -132,6 +132,29 @@ export const initSockets = (io) => {
       socket.to(`room:${currentRoomCode}`).emit('physics:action', actionPayload);
     });
 
+    // Event: Ping heartbeat to measure RTT latency
+    socket.on('ping:send', ({ timestamp }) => {
+      socket.emit('ping:reply', { timestamp });
+    });
+
+    // Event: Request full physics state from Host (when a spectator joins late)
+    socket.on('physics:request-state', () => {
+      if (!currentRoomCode) return;
+      const room = rooms.get(currentRoomCode);
+      if (room && room.hostSocketId) {
+        // Forward request to Host socket
+        io.to(room.hostSocketId).emit('physics:request-state', {
+          requesterSocketId: socket.id
+        });
+      }
+    });
+
+    // Event: Relaying full physics state response from Host to the requesting Spectator
+    socket.on('physics:state-response', ({ requesterSocketId, state }) => {
+      // Send directly to the requester
+      io.to(requesterSocketId).emit('physics:state-response', state);
+    });
+
     // Event: Send chat message
     socket.on('chat:send', ({ text }) => {
       if (!currentRoomCode) return;
