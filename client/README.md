@@ -1,16 +1,39 @@
-# React + Vite
+# VIRTUAL-LAB Client Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the Single Page Application (SPA) frontend for VIRTUAL-LAB, built with React, Vite, and Tailwind CSS. 
 
-Currently, two official plugins are available:
+## Technical Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The client coordinates real-time user actions, calculates rigid-body physical forces inside the browser container, and manages WebSocket connections to sync sandbox state across users.
 
-## React Compiler
+Key technical specifications:
+- **Physics Engine**: Matter.js operates as the simulation engine. The physics loop (running at 60Hz) is isolated inside React references (`useRef`), decoupling high-frequency calculation ticks from declarative React state updates.
+- **Data Visualization**: Recharts plots real-time kinematics metrics (such as Velocity X and Displacement X) by throttling engine state polling to 150ms.
+- **Styling**: Structured using a high-contrast Neo-Brutalist design language with hard offsets, geometric grids, and CSS-based grid canvas layers.
+- **WebSocket Gateway**: A central React context provider (`SocketContext`) hoists the Socket.io connection channel to manage synchronization updates and coordinate multiplayer lobby states.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Folder Directory
 
-## Expanding the ESLint configuration
+- `/src/components/canvas/`: Holds `PhysicsCanvas.jsx`, which manages the Matter.js lifecycle, custom shape spawning, interactive drag-and-drop constraints, and physics state serialization.
+- `/src/components/panels/`: Contains layout modules:
+  - `LeftToolbar.jsx`: Handles shape tools and guided experiment template triggers.
+  - `RightInspector.jsx`: Displays metrics, edits mass/friction parameters, and renders kinematics line charts.
+  - `AIProf.jsx`: Renders the context-aware educational tutor panel.
+  - `BottomPanel.jsx`: Manages real-time classroom participants and text logs.
+  - `AnalyticsModal.jsx`: Plots overall system kinetic/potential energy curves.
+  - `LibraryModal.jsx`: Interfaces with the database CRUD API to save and load canvas layouts.
+- `/src/context/`: Contains the global React Context providers for WebSockets room communication.
+- `/src/index.css`: Imports typography tokens and defines Neo-Brutalist border and shadow classes.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Development Setup
+
+To run the client standalone:
+1. Install client dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the Vite dev server:
+   ```bash
+   npm run dev
+   ```
+3. Open `http://localhost:5173/` in your browser.
