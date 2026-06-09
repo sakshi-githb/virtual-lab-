@@ -454,49 +454,57 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
       engine.gravity.y = parseFloat(gravityY !== undefined ? gravityY : 1.0);
 
       bodiesList.forEach(b => {
-        let body;
-        const fillStyle = b.color || '#FACC15';
-        const bodyOptions = {
-          isStatic: b.isStatic,
-          restitution: b.restitution !== undefined ? b.restitution : 0.5,
-          friction: b.friction !== undefined ? b.friction : 0.1,
-          render: {
-            fillStyle: fillStyle,
-            strokeStyle: '#1A1A1A',
-            lineWidth: 4
-          }
-        };
+        try {
+          let body;
+          const fillStyle = b.color || '#FACC15';
+          const bodyOptions = {
+            isStatic: b.isStatic,
+            restitution: b.restitution !== undefined ? b.restitution : 0.5,
+            friction: b.friction !== undefined ? b.friction : 0.1,
+            render: {
+              fillStyle: fillStyle,
+              strokeStyle: '#1A1A1A',
+              lineWidth: 4
+            }
+          };
 
-        if (b.shapeType === 'box') {
-          body = Matter.Bodies.rectangle(b.x, b.y, b.width || 60, b.height || 60, bodyOptions);
-          body.width = b.width || 60;
-          body.height = b.height || 60;
-        } else if (b.shapeType === 'circle') {
-          body = Matter.Bodies.circle(b.x, b.y, b.radius || 30, bodyOptions);
-          body.radius = b.radius || 30;
-        } else if (b.shapeType === 'polygon') {
-          body = Matter.Bodies.polygon(b.x, b.y, b.sides || 5, b.radius || 40, bodyOptions);
-          body.sidesCount = b.sides || 5;
-          body.radius = b.radius || 40;
-        }
-
-        if (body) {
-          body.syncId = b.syncId || `${Date.now()}-${b.shapeType}-${Math.random().toString(36).substr(2, 9)}`;
-          body.labelName = b.labelName || `${b.shapeType} #${engine.world.bodies.length + 1}`;
-          body.customColor = fillStyle;
-          body.shapeType = b.shapeType;
-
-          if (b.angle !== undefined && b.angle !== null) {
-            Matter.Body.setAngle(body, parseFloat(b.angle));
-          }
-          if (b.mass !== undefined && b.mass !== null) {
-            Matter.Body.setMass(body, parseFloat(b.mass));
-          }
-          if (b.vx !== undefined && b.vy !== undefined && b.vx !== null && b.vy !== null) {
-            Matter.Body.setVelocity(body, { x: parseFloat(b.vx), y: parseFloat(b.vy) });
+          if (b.shapeType === 'box') {
+            body = Matter.Bodies.rectangle(b.x, b.y, b.width || 60, b.height || 60, bodyOptions);
+            body.width = b.width || 60;
+            body.height = b.height || 60;
+          } else if (b.shapeType === 'circle') {
+            body = Matter.Bodies.circle(b.x, b.y, b.radius || 30, bodyOptions);
+            body.radius = b.radius || 30;
+          } else if (b.shapeType === 'polygon') {
+            body = Matter.Bodies.polygon(b.x, b.y, b.sides || 5, b.radius || 40, bodyOptions);
+            body.sidesCount = b.sides || 5;
+            body.radius = b.radius || 40;
           }
 
-          Matter.Composite.add(engine.world, body);
+          if (body) {
+            body.syncId = b.syncId || `${Date.now()}-${b.shapeType}-${Math.random().toString(36).substr(2, 9)}`;
+            body.labelName = b.labelName || `${b.shapeType} #${engine.world.bodies.length + 1}`;
+            body.customColor = fillStyle;
+            body.shapeType = b.shapeType;
+
+            if (b.angle !== undefined && b.angle !== null) {
+              Matter.Body.setAngle(body, parseFloat(b.angle));
+            }
+            
+            // Only modify mass and velocity for dynamic (non-static) bodies
+            if (!b.isStatic) {
+              if (b.mass !== undefined && b.mass !== null) {
+                Matter.Body.setMass(body, parseFloat(b.mass));
+              }
+              if (b.vx !== undefined && b.vy !== undefined && b.vx !== null && b.vy !== null) {
+                Matter.Body.setVelocity(body, { x: parseFloat(b.vx), y: parseFloat(b.vy) });
+              }
+            }
+
+            Matter.Composite.add(engine.world, body);
+          }
+        } catch (err) {
+          console.error(`[Deserialize Body Error] Failed to reconstruct body:`, err);
         }
       });
 
