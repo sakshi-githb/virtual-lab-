@@ -91,68 +91,68 @@ const getLocalResponse = (message, activePreset, selectedBody, isPlaying) => {
   ) {
     if (activePreset === 'pendulum') {
       responseText = `### 🔮 Current Simulation: Simple Pendulum SHM
-
-You have loaded the **Simple Pendulum** template. Here is what is happening physically:
-- **Restoring Force**: The tension in the string pulls the bob toward the anchor, while gravity pulls it down. The net force is a restoring force pulling the bob back toward the center vertical line.
-- **Periodicity**: Because the displacement is small, the restoring force is proportional to displacement ($F \\approx -mg\\theta$), which creates **Simple Harmonic Motion (SHM)**.
-- **Energy Transfer**: Kinetic energy is at its maximum at the lowest point of the swing (velocity peaks), while potential energy peaks at the highest point (velocity is zero).
-${selectedBody ? `- **Inspection**: You currently have **${selectedBody.labelName}** selected. Mass: **${selectedBody.mass} kg**, Velocity: **(${selectedBody.velocity.x}, ${selectedBody.velocity.y}) m/s**.` : '- **Tip**: Click the swinging bob to inspect its kinematics and graph its velocity sinusoid!'}`;
-      insight = `Pendulum Period T = 2π√(L/g) is independent of bob mass.`;
-    } else if (activePreset === 'spring') {
-      responseText = `### 🔮 Current Simulation: Damped Spring Oscillation
-
-You have loaded the **Spring Mass** template. Here is the physical analysis:
-- **Hooke's Law**: The spring constraint exerts a horizontal restoring force on the block: $F = -kx$.
-- **Damping (Friction)**: The system decays slowly due to a damping factor ($c$) built into the constraint, representing air resistance or mechanical drag. This creates **damped harmonic oscillation**.
-- **Gravity**: Gravity is set to **0.0** to prevent the block from sagging vertically, isolating horizontal motion.
-${selectedBody ? `- **Inspection**: The selected **${selectedBody.labelName}** is sliding horizontally. Mass: **${selectedBody.mass} kg**, Restitution: **${selectedBody.restitution}**.` : '- **Tip**: Select the spring block to plot its damped oscillation curve in real-time!'}`;
-      insight = "Hooke's Law restoring force F = -kx is proportional and opposite to displacement.";
-    } else if (activePreset === 'friction') {
-      responseText = `### 🔮 Current Simulation: Inclined Friction Ramp
-
-You have loaded the **Friction Slope** template. Here is what is happening:
-- **Component Forces**: Gravity pulls the block down the incline ($F_{\\text{down}} = mg \\sin\\theta$). Friction pushes up parallel to the ramp ($F_f = \\mu N = \\mu mg \\cos\\theta$).
-- **Net Acceleration**: The net force is $F_{\\text{net}} = mg(\\sin\\theta - \\mu \\cos\\theta)$. If $\\sin\\theta > \\mu \\cos\\theta$, the block accelerates down the ramp.
-- **Angle**: The ramp is set to 0.4 rad (~23 degrees).
-${selectedBody ? `- **Inspection**: The block **${selectedBody.labelName}** has friction coefficient **${selectedBody.friction}**.` : '- **Tip**: Select the block and adjust the friction slider to see when it halts sliding.'}`;
-      insight = "If friction coefficient μ > tan(θ), the block remains stationary on the slope!";
-    } else if (activePreset === 'bounciness') {
-      responseText = `### 🔮 Current Simulation: Restitution Comparison
-
-You have loaded the **Collision Balls** template:
-- **Elastic vs Inelastic**: The yellow ball ($e = 0.90$) loses very little kinetic energy when colliding with the boundary walls, so it rebounds high. The blue ball ($e = 0.15$) loses almost all kinetic energy, converting it to heat/deformation, and stays near the floor.
-${selectedBody ? `- **Inspection**: Selected **${selectedBody.labelName}** has restitution: **${selectedBody.restitution}**.` : '- **Tip**: Inspect either ball and modify its restitution to test elastic coefficients!'}`;
-      insight = "Restitution coefficient (e) ranges from 0 (inelastic) to 1 (perfectly elastic).";
-    } else if (activePreset === 'projectile') {
-      responseText = `### 🔮 Current Simulation: Projectile Parabolic Motion
-
-You have loaded the **Projectile Cannon** template:
-- **Independent Velocities**: Horizontal speed ($v_x$) remains constant (ignoring drag). Vertical speed ($v_y$) is accelerated downwards by gravity ($a_y = -g$), producing a parabolic flight arc.
-- **Formulas**: Max horizontal range is $R = \frac{v^2 \sin(2\theta)}{g}$.`;
-      insight = "Projectile Range is inversely proportional to gravity: decreasing g increases range!";
-    } else if (activePreset === 'catapult') {
-      responseText = `### 🔮 Current Simulation: Rotational Catapult Lever
-
-You have loaded the **Physics Catapult** template:
-- **Torque Exchange**: The falling heavy block creates gravitational torque on the left lever: $\tau_1 = m_1 g r_1$. This rotates the arm, producing a high tangential velocity ($v = \omega r_2$) at the right tip, launching the ball.
-- **Mechanical Advantage**: Lever ratio is optimized to convert heavy weight fall speed into rapid projectile launch speed.`;
-      insight = "Torque (τ) is maximized when force is applied perpendicular to the arm length.";
-    } else if (activePreset === 'bridge') {
-      responseText = `### 🔮 Current Simulation: Suspension Bridge Load
-
-You have loaded the **Plank Bridge** template:
-- **Linked Nodes**: Seven dynamic planks are joined by elastic spring constraints.
-- **Tension Equilibrium**: The falling stress block transfers downward force into lateral tension forces pulling on the left and right anchor decks.`;
-      insight = "Elastic constraints behave like springs, oscillating until mechanical damping settles the load.";
-    } else {
-      responseText = `### 🔮 Current Simulation: Custom Rigid Body Sandbox
-
-You are running a custom workspace layout:
-- **Matter.js Engine**: Solving multi-body collision impulses at 60Hz.
-- **Kinematics**: Dynamic shapes obey conservation of momentum, gravity acceleration, and boundary collisions.
-${selectedBody ? `- **Inspection**: You have selected **${selectedBody.labelName}** (${selectedBody.shapeType}) at coordinate **(${selectedBody.position.x}, ${selectedBody.position.y})** with velocity **(${selectedBody.velocity.x}, ${selectedBody.velocity.y}) m/s**.` : '- **Tip**: Spawn shapes from the left bar, drag them to throw, and click them to view graphs!'}`;
-      insight = "Adjust gravity on the Top Bar to see how objects float or drop.";
-    }
+ 
+ You have loaded the **Simple Pendulum** template. Here is what is happening physically:
+ - **Restoring Force**: The tension in the string pulls the bob toward the anchor, while gravity pulls it down. The net force is a restoring force pulling the bob back toward the center vertical line.
+ - **Periodicity**: Because the displacement is small, the restoring force is proportional to displacement ($F \\approx -mg\\theta$), which creates **Simple Harmonic Motion (SHM)**.
+ - **Energy Transfer**: Kinetic energy is at its maximum at the lowest point of the swing (velocity peaks), while potential energy peaks at the highest point (velocity is zero).
+ ${selectedBody ? `- **Inspection**: You currently have **${selectedBody.labelName}** selected. Mass: **${selectedBody.mass} kg**, Velocity: **(${selectedBody.velocity?.x || 0}, ${selectedBody.velocity?.y || 0}) m/s**.` : '- **Tip**: Click the swinging bob to inspect its kinematics and graph its velocity sinusoid!'}`;
+       insight = `Pendulum Period T = 2π√(L/g) is independent of bob mass.`;
+     } else if (activePreset === 'spring') {
+       responseText = `### 🔮 Current Simulation: Damped Spring Oscillation
+ 
+ You have loaded the **Spring Mass** template. Here is the physical analysis:
+ - **Hooke's Law**: The spring constraint exerts a horizontal restoring force on the block: $F = -kx$.
+ - **Damping (Friction)**: The system decays slowly due to a damping factor ($c$) built into the constraint, representing air resistance or mechanical drag. This creates **damped harmonic oscillation**.
+ - **Gravity**: Gravity is set to **0.0** to prevent the block from sagging vertically, isolating horizontal motion.
+ ${selectedBody ? `- **Inspection**: The selected **${selectedBody.labelName}** is sliding horizontally. Mass: **${selectedBody.mass} kg**, Restitution: **${selectedBody.restitution}**.` : '- **Tip**: Select the spring block to plot its damped oscillation curve in real-time!'}`;
+       insight = "Hooke's Law restoring force F = -kx is proportional and opposite to displacement.";
+     } else if (activePreset === 'friction') {
+       responseText = `### 🔮 Current Simulation: Inclined Friction Ramp
+ 
+ You have loaded the **Friction Slope** template. Here is what is happening:
+ - **Component Forces**: Gravity pulls the block down the incline ($F_{\\text{down}} = mg \\sin\\theta$). Friction pushes up parallel to the ramp ($F_f = \\mu N = \\mu mg \\cos\\theta$).
+ - **Net Acceleration**: The net force is $F_{\\text{net}} = mg(\\sin\\theta - \\mu \\cos\\theta)$. If $\\sin\\theta > \\mu \\cos\\theta$, the block accelerates down the ramp.
+ - **Angle**: The ramp is set to 0.4 rad (~23 degrees).
+ ${selectedBody ? `- **Inspection**: The block **${selectedBody.labelName}** has friction coefficient **${selectedBody.friction}**.` : '- **Tip**: Select the block and adjust the friction slider to see when it halts sliding.'}`;
+       insight = "If friction coefficient μ > tan(θ), the block remains stationary on the slope!";
+     } else if (activePreset === 'bounciness') {
+       responseText = `### 🔮 Current Simulation: Restitution Comparison
+ 
+ You have loaded the **Collision Balls** template:
+ - **Elastic vs Inelastic**: The yellow ball ($e = 0.90$) loses very little kinetic energy when colliding with the boundary walls, so it rebounds high. The blue ball ($e = 0.15$) loses almost all kinetic energy, converting it to heat/deformation, and stays near the floor.
+ ${selectedBody ? `- **Inspection**: Selected **${selectedBody.labelName}** has restitution: **${selectedBody.restitution}**.` : '- **Tip**: Inspect either ball and modify its restitution to test elastic coefficients!'}`;
+       insight = "Restitution coefficient (e) ranges from 0 (inelastic) to 1 (perfectly elastic).";
+     } else if (activePreset === 'projectile') {
+       responseText = `### 🔮 Current Simulation: Projectile Parabolic Motion
+ 
+ You have loaded the **Projectile Cannon** template:
+ - **Independent Velocities**: Horizontal speed ($v_x$) remains constant (ignoring drag). Vertical speed ($v_y$) is accelerated downwards by gravity ($a_y = -g$), producing a parabolic flight arc.
+ - **Formulas**: Max horizontal range is $R = \frac{v^2 \sin(2\theta)}{g}$.`;
+       insight = "Projectile Range is inversely proportional to gravity: decreasing g increases range!";
+     } else if (activePreset === 'catapult') {
+       responseText = `### 🔮 Current Simulation: Rotational Catapult Lever
+ 
+ You have loaded the **Physics Catapult** template:
+ - **Torque Exchange**: The falling heavy block creates gravitational torque on the left lever: $\tau_1 = m_1 g r_1$. This rotates the arm, producing a high tangential velocity ($v = \omega r_2$) at the right tip, launching the ball.
+ - **Mechanical Advantage**: Lever ratio is optimized to convert heavy weight fall speed into rapid projectile launch speed.`;
+       insight = "Torque (τ) is maximized when force is applied perpendicular to the arm length.";
+     } else if (activePreset === 'bridge') {
+       responseText = `### 🔮 Current Simulation: Suspension Bridge Load
+ 
+ You have loaded the **Plank Bridge** template:
+ - **Linked Nodes**: Seven dynamic planks are joined by elastic spring constraints.
+ - **Tension Equilibrium**: The falling stress block transfers downward force into lateral tension forces pulling on the left and right anchor decks.`;
+       insight = "Elastic constraints behave like springs, oscillating until mechanical damping settles the load.";
+     } else {
+       responseText = `### 🔮 Current Simulation: Custom Rigid Body Sandbox
+ 
+ You are running a custom workspace layout:
+ - **Matter.js Engine**: Solving multi-body collision impulses at 60Hz.
+ - **Kinematics**: Dynamic shapes obey conservation of momentum, gravity acceleration, and boundary collisions.
+ ${selectedBody ? `- **Inspection**: You have selected **${selectedBody.labelName}** (${selectedBody.shapeType || 'body'}) at coordinate **(${selectedBody.position?.x || 0}, ${selectedBody.position?.y || 0})** with velocity **(${selectedBody.velocity?.x || 0}, ${selectedBody.velocity?.y || 0}) m/s**.` : '- **Tip**: Spawn shapes from the left bar, drag them to throw, and click them to view graphs!'}`;
+       insight = "Adjust gravity on the Top Bar to see how objects float or drop.";
+     }
   } else if (normalizedMsg.includes('gravity') || normalizedMsg.includes('g-force')) {
     responseText = `### 🌍 Understanding Gravity:
 
