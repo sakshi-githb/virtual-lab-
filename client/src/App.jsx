@@ -53,6 +53,8 @@ function App() {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [user, setUser] = useState(null); 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAIOpen, setIsAIOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   // Trigger physics loops when play state updates
@@ -268,7 +270,7 @@ function App() {
   }
 
   return (
-    <div className="w-screen min-h-screen flex flex-col p-4 bg-cream overflow-y-auto dashboard-lock relative font-sans">
+    <div className="w-screen h-screen flex flex-col p-4 bg-cream overflow-hidden dashboard-lock relative font-sans select-none">
       {/* Toast Notifications */}
       <div className="absolute top-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
         {notifications.map((n) => (
@@ -310,6 +312,10 @@ function App() {
                 </div>
               )
             }
+            isAIOpen={isAIOpen}
+            onToggleAI={() => setIsAIOpen(!isAIOpen)}
+            isGuideOpen={isGuideOpen}
+            onToggleGuide={() => setIsGuideOpen(!isGuideOpen)}
           />
         </div>
         
@@ -324,8 +330,8 @@ function App() {
         </button>
       </div>
 
-      {/* Main Sandbox Layout Area (Dynamic height: full viewport height on large displays, min height locks scroll elsewhere) */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:min-h-[720px] lg:h-[calc(100vh-120px)] relative overflow-visible flex-shrink-0">
+      {/* Main Sandbox Layout Area (Viewport height locked, flex-1 min-h-0 to allow proper scaling without scrollbars) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 relative overflow-hidden flex-shrink-0">
         
         {/* Drawer Backdrop Overlay (Mobile/Tablet only) */}
         {(isLeftOpen || isRightOpen) && (
@@ -352,10 +358,10 @@ function App() {
         </div>
 
         {/* COLUMN 2: CENTER SIMULATION COLUMN (Canvas + Bottom panel directly underneath) */}
-        <div className="flex-1 min-w-0 lg:h-full flex flex-col gap-4">
+        <div className="flex-1 min-w-0 h-full flex flex-col gap-4">
           
           {/* Main Physics Canvas (Stretches fluidly to fill all upper vertical space) */}
-          <div className="flex-1 min-h-[380px] relative">
+          <div className="flex-1 min-h-0 relative">
             
             {/* MOBILE TOGGLE: Left Toolbar Menu Trigger */}
             <button
@@ -366,11 +372,11 @@ function App() {
               {isLeftOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            {/* MOBILE TOGGLE: Right Inspector / AI Prof Trigger */}
+            {/* MOBILE TOGGLE: Right Inspector Trigger */}
             <button
               onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
               className="lg:hidden absolute top-4 right-4 z-20 bg-brutalBlue text-white border-3 border-charcoal p-2 shadow-brutal-sm active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-brutal cursor-pointer"
-              title="Open Professor / Inspector"
+              title="Open Inspector"
             >
               {isRightOpen ? <X className="w-5 h-5" /> : <Brain className="w-5 h-5 fill-current" />}
             </button>
@@ -383,16 +389,18 @@ function App() {
             />
           </div>
 
-          {/* Bottom Panel (Lobby / Private Journal) - Locked directly underneath canvas inside center column */}
-          <div className="flex-shrink-0 h-48">
-            {labMode === 'solo' ? <NotebookPanel onSpawnPreset={handleSpawnPreset} /> : <BottomPanel />}
-          </div>
+          {/* Bottom Panel (Lobby / Chat Room) - Locked directly underneath canvas only in collaborative mode */}
+          {labMode === 'collaborative' && (
+            <div className="flex-shrink-0 h-48">
+              <BottomPanel />
+            </div>
+          )}
         </div>
 
-        {/* COLUMN 3: RIGHT SIDEBAR COLUMN (Inspector & AI Prof stacked, runs full height) */}
+        {/* COLUMN 3: RIGHT SIDEBAR COLUMN (Inspector, runs full height) */}
         <div className={`
           flex-shrink-0 z-40 transition-transform duration-200 ease-out h-full
-          fixed lg:static top-0 right-0 w-80
+          fixed lg:static top-0 right-0 w-80 bg-cream lg:bg-transparent p-4 lg:p-0 border-l-3 lg:border-l-0 border-charcoal lg:border-none shadow-brutal lg:shadow-none
           ${isRightOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         `}>
           <div className="h-full flex flex-col gap-4 overflow-y-auto pr-1">
@@ -400,13 +408,30 @@ function App() {
               selectedBody={selectedBody}
               onUpdateProperty={handleUpdateProperty}
             />
+          </div>
+        </div>
+
+        {/* Floating AI Professor Widget */}
+        {isAIOpen && (
+          <div className="fixed bottom-6 right-6 z-50 w-80 md:w-96 h-[480px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-160px)]">
             <AIProf 
               selectedBody={selectedBody} 
               activePreset={activePreset}
               isPlaying={isPlaying}
+              onClose={() => setIsAIOpen(false)}
             />
           </div>
-        </div>
+        )}
+
+        {/* Floating Lab Guide Widget */}
+        {isGuideOpen && (
+          <div className="fixed bottom-6 left-28 z-50 w-80 md:w-96 h-[480px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-160px)]">
+            <NotebookPanel 
+              onSpawnPreset={handleSpawnPreset} 
+              onClose={() => setIsGuideOpen(false)}
+            />
+          </div>
+        )}
 
         <AuthModal 
           isOpen={isAuthModalOpen} 

@@ -8,7 +8,9 @@ import {
   User, 
   Globe, 
   Sparkles,
-  Activity
+  Activity,
+  Brain,
+  BookOpen
 } from 'lucide-react';
 
 const TopBar = ({ 
@@ -21,7 +23,11 @@ const TopBar = ({
   onOpenAuthModal,
   onOpenAnalytics,
   customRoomName = "Newton's Den",
-  customOnlineHud = null
+  customOnlineHud = null,
+  isAIOpen,
+  onToggleAI,
+  isGuideOpen,
+  onToggleGuide
 }) => {
   return (
     <div className="w-full flex items-center justify-between gap-4 card-brutal bg-white py-3 px-5 mb-4 select-none">
@@ -97,6 +103,32 @@ const TopBar = ({
         >
           <Activity className="w-4 h-4" />
           <span>Analytics</span>
+        </button>
+
+        <button
+          onClick={onToggleAI}
+          className={`btn-brutal px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all duration-100 ${
+            isAIOpen 
+              ? 'bg-brutalBlue text-white hover:bg-blue-600' 
+              : 'bg-white hover:bg-neutral-100'
+          }`}
+          title="Toggle AI Professor floating helper"
+        >
+          <Brain className="w-4 h-4" />
+          <span>AI Prof</span>
+        </button>
+
+        <button
+          onClick={onToggleGuide}
+          className={`btn-brutal px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all duration-100 ${
+            isGuideOpen 
+              ? 'bg-brutalYellow text-charcoal hover:bg-yellow-300' 
+              : 'bg-white hover:bg-neutral-100'
+          }`}
+          title="Toggle Lab Manual Guide floating helper"
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Lab Guide</span>
         </button>
       </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Terminal, Brain, Send, HelpCircle, BookOpen } from 'lucide-react';
+import { Sparkles, Terminal, Brain, Send, HelpCircle, BookOpen, X } from 'lucide-react';
 
-const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
+const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true, onClose }) => {
   const [messages, setMessages] = useState([
     {
       id: 'init',
@@ -12,6 +12,7 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
   const chatEndRef = useRef(null);
 
   // Auto-scroll chat logs on message updates
@@ -107,24 +108,24 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
   const advice = getProfAdvice();
 
   // Helper to parse simple markdown bold/code in chat bubble
-  const renderMessageText = (text) => {
+  const renderMessageText = (text, sender) => {
     if (!text) return null;
     const lines = text.split('\n');
     return lines.map((line, idx) => {
       // Headings
       if (line.startsWith('### ')) {
-        return <h3 key={idx} className="font-extrabold text-xs uppercase tracking-wider text-charcoal border-b border-charcoal/20 pb-0.5 mb-1.5 mt-2">{line.replace('### ', '')}</h3>;
+        return <h3 key={idx} className={`font-extrabold text-xs uppercase tracking-wider border-b pb-0.5 mb-1.5 mt-2 ${sender === 'user' ? 'text-white border-white/20' : 'text-charcoal border-charcoal/25'}`}>{line.replace('### ', '')}</h3>;
       }
       if (line.startsWith('## ')) {
-        return <h2 key={idx} className="font-black text-sm uppercase tracking-wide text-charcoal border-b-2 border-charcoal/30 pb-0.5 mb-1.5 mt-2">{line.replace('## ', '')}</h2>;
+        return <h2 key={idx} className={`font-black text-sm uppercase tracking-wide border-b-2 pb-0.5 mb-1.5 mt-2 ${sender === 'user' ? 'text-white border-white/30' : 'text-charcoal border-charcoal/30'}`}>{line.replace('## ', '')}</h2>;
       }
       // Bullet list items
       if (line.startsWith('- ') || line.startsWith('* ')) {
         const itemText = line.substring(2);
         return (
           <div key={idx} className="flex items-start gap-1 ml-1 my-0.5">
-            <span className="text-brutalYellow font-extrabold">•</span>
-            <span className="text-[11px] leading-relaxed">{parseInlineMarkdown(itemText)}</span>
+            <span className={sender === 'user' ? 'text-yellow-300 font-extrabold' : 'text-brutalBlue font-extrabold'}>•</span>
+            <span className="text-xs md:text-[13px] leading-relaxed font-medium">{parseInlineMarkdown(itemText, sender)}</span>
           </div>
         );
       }
@@ -133,8 +134,8 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
       if (numMatch) {
         return (
           <div key={idx} className="flex items-start gap-1 ml-1 my-0.5">
-            <span className="font-extrabold text-[11px] text-charcoal/50">{numMatch[1]}.</span>
-            <span className="text-[11px] leading-relaxed">{parseInlineMarkdown(numMatch[2])}</span>
+            <span className={`font-extrabold text-xs md:text-[13px] ${sender === 'user' ? 'text-white/60' : 'text-charcoal/50'}`}>{numMatch[1]}.</span>
+            <span className="text-xs md:text-[13px] leading-relaxed font-medium">{parseInlineMarkdown(numMatch[2], sender)}</span>
           </div>
         );
       }
@@ -143,21 +144,21 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
         return <div key={idx} className="h-1.5" />;
       }
       // Regular paragraph
-      return <p key={idx} className="text-[11px] leading-relaxed my-0.5">{parseInlineMarkdown(line)}</p>;
+      return <p key={idx} className="text-xs md:text-[13px] leading-relaxed font-medium my-0.5">{parseInlineMarkdown(line, sender)}</p>;
     });
   };
 
-  const parseInlineMarkdown = (text) => {
+  const parseInlineMarkdown = (text, sender) => {
     const parts = text.split(/(\*\*.*?\*\*|`.*?`|\$.*?\$)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-extrabold text-charcoal">{part.slice(2, -2)}</strong>;
+        return <strong key={i} className={`font-extrabold ${sender === 'user' ? 'text-white' : 'text-charcoal'}`}>{part.slice(2, -2)}</strong>;
       }
       if (part.startsWith('`') && part.endsWith('`')) {
-        return <code key={i} className="bg-neutral-100 border border-neutral-300 px-1 py-0.5 rounded-sm font-mono text-[9px] text-brutalRed">{part.slice(1, -1)}</code>;
+        return <code key={i} className={`font-mono text-[11px] px-1 py-0.5 rounded-sm ${sender === 'user' ? 'bg-blue-800 text-yellow-200 border border-blue-700' : 'bg-neutral-100 border border-neutral-300 text-brutalRed'}`}>{part.slice(1, -1)}</code>;
       }
       if (part.startsWith('$') && part.endsWith('$')) {
-        return <span key={i} className="font-serif italic text-charcoal font-bold">{part.slice(1, -1)}</span>;
+        return <span key={i} className={`font-serif italic font-bold ${sender === 'user' ? 'text-white' : 'text-charcoal'}`}>{part.slice(1, -1)}</span>;
       }
       return part;
     });
@@ -233,94 +234,140 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
       handleSendQuery('Tell me how I can perform the experiment?');
     } else if (type === 'formula') {
       handleSendQuery('What mathematical formulas apply to this setup?');
+    } else if (type === 'graph') {
+      handleSendQuery('How do I read the kinematics graph, and what does the sine wave represent?');
     }
   };
 
   return (
-    <div className="card-brutal bg-charcoal text-white p-4 flex flex-col gap-4 relative overflow-hidden select-none h-[520px]">
+    <div className="card-brutal bg-charcoal text-white p-4 flex flex-col gap-4 relative overflow-hidden select-none h-full min-h-[320px] rounded-2xl shadow-brutal">
       {/* Decorative Blueprint lines */}
       <div className="absolute top-0 right-0 opacity-10 pointer-events-none font-mono text-[70px] leading-none select-none">
         MC²
       </div>
 
       {/* Professor Avatar and Label */}
-      <div className="flex items-center gap-3 border-b border-white/20 pb-2 z-10 flex-shrink-0">
-        <div className="w-10 h-10 bg-brutalYellow text-charcoal border-2 border-white font-extrabold flex items-center justify-center text-lg rounded-none shadow-[2px_2px_0px_0px_#FFF] animate-bounce" style={{ animationDuration: '3.5s' }}>
-          👨‍🏫
+      <div className="flex items-center justify-between border-b border-white/20 pb-2.5 z-10 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-brutalYellow text-charcoal border-2 border-white font-extrabold flex items-center justify-center text-lg rounded-full shadow-[2px_2px_0px_0px_#FFF] animate-bounce" style={{ animationDuration: '3.5s' }}>
+            👨‍🏫
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="font-extrabold text-sm text-brutalYellow flex items-center gap-1">
+              <Brain className="w-3.5 h-3.5 fill-current" />
+              PROF. VECTOR
+            </span>
+            <span className="text-[9px] font-mono text-white/50 uppercase tracking-widest leading-none">
+              AI Lab Assistant
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col text-left">
-          <span className="font-extrabold text-sm text-brutalYellow flex items-center gap-1">
-            <Brain className="w-3.5 h-3.5 fill-current" />
-            PROF. VECTOR
-          </span>
-          <span className="text-[9px] font-mono text-white/50 uppercase tracking-widest leading-none">
-            AI Lab Assistant
-          </span>
-        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1.5 text-white hover:text-brutalYellow transition-colors cursor-pointer border-2 border-transparent hover:border-white rounded-full bg-neutral-800 flex items-center justify-center"
+            title="Minimize Advisor"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      {/* Section 1: Live Kinematics Advisor (Updates instantly in real-time) */}
-      <div className="bg-neutral-800/80 border-2 border-white/20 p-2.5 flex flex-col gap-1 text-left relative z-10 flex-shrink-0">
-        <div className="text-[9px] font-mono text-brutalYellow uppercase tracking-wider font-bold border-b border-white/10 pb-0.5">
-          🔮 Live Kinematics Advisor
+      {/* Section 1: Live Kinematics Advisor (Collapsible Physics Explanation) */}
+      <div className="bg-neutral-800/80 border-2 border-white/20 p-2.5 flex flex-col gap-1 text-left relative z-10 flex-shrink-0 rounded-xl">
+        <div className="flex justify-between items-center border-b border-white/10 pb-1 flex-shrink-0">
+          <span className="text-[9px] font-mono text-brutalYellow uppercase tracking-wider font-bold">
+            🔮 Live Kinematics Advisor
+          </span>
+          <button
+            onClick={() => setIsAdvisorOpen(!isAdvisorOpen)}
+            className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-700 hover:bg-brutalYellow hover:text-charcoal text-white px-2 py-0.5 transition-colors cursor-pointer border border-white/15 rounded-full"
+            title="Toggle Experiment Physics Explanation"
+          >
+            {isAdvisorOpen ? "Hide Explanation" : "Explain Experiment"}
+          </button>
         </div>
-        <div className="text-[10px] leading-tight text-white/90">
-          {advice.speech}
-        </div>
-        <div className="flex items-center gap-1 text-[8px] font-mono text-brutalYellow/80 font-bold mt-0.5">
-          <Terminal className="w-3 h-3 flex-shrink-0" />
-          <span>{advice.insight}</span>
-        </div>
+        {isAdvisorOpen && (
+          <div className="flex flex-col gap-1 mt-1.5 animate-in fade-in duration-200">
+            <div className="text-[10px] md:text-[11px] leading-relaxed text-white/90">
+              {advice.speech}
+            </div>
+            <div className="flex items-center gap-1 text-[8px] md:text-[9px] font-mono text-brutalYellow/80 font-bold mt-0.5">
+              <Terminal className="w-3.5 h-3.5 flex-shrink-0 text-brutalYellow" />
+              <span>{advice.insight}</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Section 2: Q&A Chat Logs */}
-      <div className="flex-1 min-h-0 border-3 border-charcoal bg-[#F7F4EB] text-charcoal p-2 flex flex-col gap-3 overflow-y-auto z-10">
+      {/* Section 2: Q&A Chat Logs (ChatGPT Style) */}
+      <div className="flex-1 min-h-0 border border-neutral-200 bg-[#FAF9F5] p-3.5 flex flex-col gap-4 overflow-y-auto z-10 rounded-xl text-charcoal scrollbar-thin">
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`flex flex-col max-w-[85%] ${
-              m.sender === 'user' ? 'self-end items-end' : 'self-start items-start'
+            className={`flex gap-2.5 max-w-[90%] ${
+              m.sender === 'user' ? 'self-end flex-row-reverse' : 'self-start flex-row'
             }`}
           >
-            {/* Sender Label */}
-            <span className="text-[8px] font-bold uppercase tracking-wider text-charcoal/40 mb-0.5 px-1">
-              {m.sender === 'user' ? 'Experimenter' : 'Prof. Vector'}
-            </span>
-
-            {/* Bubble */}
-            <div
-              className={`border-2 border-charcoal p-2 text-left relative shadow-brutal-sm ${
-                m.sender === 'user'
-                  ? 'bg-brutalYellow rounded-none'
-                  : 'bg-white rounded-none'
-              }`}
-            >
-              {/* Message content */}
-              <div className="text-charcoal flex flex-col gap-1">
-                {renderMessageText(m.text)}
+            {/* AI Avatar */}
+            {m.sender === 'prof' && (
+              <div className="w-7 h-7 rounded-full bg-brutalYellow text-charcoal border border-neutral-300 flex items-center justify-center text-xs flex-shrink-0 shadow-sm select-none">
+                👨‍🏫
               </div>
-
-              {/* Formula Terminal in Bubble */}
-              {m.insight && (
-                <div className="flex items-start gap-1 text-[9px] font-mono text-brutalRed font-extrabold border-t border-charcoal/10 pt-1 mt-1.5">
-                  <Terminal className="w-3 h-3 flex-shrink-0 text-brutalRed" />
-                  <span>{m.insight}</span>
+            )}
+            
+            {/* Message Bubble Column */}
+            <div className="flex flex-col">
+              <span className={`text-[8px] font-bold uppercase tracking-wider text-charcoal/40 mb-0.5 px-1 ${
+                m.sender === 'user' ? 'text-right' : 'text-left'
+              }`}>
+                {m.sender === 'user' ? 'You' : 'Prof. Vector'}
+              </span>
+              
+              <div
+                className={`p-3 text-left relative shadow-xs leading-relaxed ${
+                  m.sender === 'user'
+                    ? 'bg-brutalBlue text-white rounded-2xl rounded-tr-none border-none'
+                    : 'bg-white text-charcoal rounded-2xl rounded-tl-none border border-neutral-200'
+                }`}
+              >
+                <div className={`flex flex-col gap-1 text-xs md:text-[13px] font-medium leading-relaxed ${
+                  m.sender === 'user' ? 'text-white' : 'text-charcoal'
+                }`}>
+                  {renderMessageText(m.text, m.sender)}
                 </div>
-              )}
+
+                {/* Formula Terminal in Bubble */}
+                {m.insight && (
+                  <div className={`flex items-start gap-1 text-[11px] font-mono font-extrabold border-t pt-1 mt-1.5 ${
+                    m.sender === 'user' 
+                      ? 'border-white/20 text-white/95' 
+                      : 'border-charcoal/10 text-brutalRed'
+                  }`}>
+                    <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>{m.insight}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}
 
         {isLoading && (
-          <div className="flex flex-col max-w-[80%] self-start items-start">
-            <span className="text-[8px] font-bold uppercase tracking-wider text-charcoal/40 mb-0.5 px-1">
-              Prof. Vector
-            </span>
-            <div className="bg-white border-2 border-charcoal p-2 rounded-none shadow-brutal-sm flex items-center gap-1.5 text-[10px] font-bold font-mono">
-              <span className="w-1.5 h-1.5 bg-charcoal rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-charcoal rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-charcoal rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              <span>Analyzing kinematics...</span>
+          <div className="flex gap-2.5 max-w-[80%] self-start items-start">
+            <div className="w-7 h-7 rounded-full bg-brutalYellow text-charcoal border border-neutral-300 flex items-center justify-center text-xs flex-shrink-0 shadow-sm select-none">
+              👨‍🏫
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[8px] font-bold uppercase tracking-wider text-charcoal/40 mb-0.5 px-1">
+                Prof. Vector
+              </span>
+              <div className="bg-white border border-neutral-200 p-2.5 rounded-2xl rounded-tl-none shadow-xs flex items-center gap-1.5 text-xs font-bold font-mono text-charcoal">
+                <span className="w-1.5 h-1.5 bg-charcoal rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 bg-charcoal rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 bg-charcoal rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span>Thinking...</span>
+              </div>
             </div>
           </div>
         )}
@@ -332,7 +379,7 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
         <button
           onClick={() => handleQuickQuestion('explain')}
           disabled={isLoading}
-          className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-800 border-2 border-white/20 text-white hover:bg-brutalYellow hover:text-charcoal px-2 py-1 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-0.5"
+          className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-800 border border-white/15 text-white hover:bg-brutalYellow hover:text-charcoal px-3 py-1 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-0.5 rounded-full"
         >
           <HelpCircle className="w-2.5 h-2.5" />
           <span>Explain Sim</span>
@@ -340,7 +387,7 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
         <button
           onClick={() => handleQuickQuestion('guide')}
           disabled={isLoading}
-          className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-800 border-2 border-white/20 text-white hover:bg-brutalYellow hover:text-charcoal px-2 py-1 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-0.5"
+          className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-800 border border-white/15 text-white hover:bg-brutalYellow hover:text-charcoal px-3 py-1 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-0.5 rounded-full"
         >
           <BookOpen className="w-2.5 h-2.5" />
           <span>Perform Experiment</span>
@@ -348,15 +395,23 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
         <button
           onClick={() => handleQuickQuestion('formula')}
           disabled={isLoading}
-          className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-800 border-2 border-white/20 text-white hover:bg-brutalYellow hover:text-charcoal px-2 py-1 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-0.5"
+          className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-800 border border-white/15 text-white hover:bg-brutalYellow hover:text-charcoal px-3 py-1 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-0.5 rounded-full"
         >
           <Sparkles className="w-2.5 h-2.5" />
           <span>Formulas</span>
         </button>
+        <button
+          onClick={() => handleQuickQuestion('graph')}
+          disabled={isLoading}
+          className="text-[8px] font-mono font-bold uppercase tracking-wider bg-neutral-800 border border-white/15 text-white hover:bg-brutalYellow hover:text-charcoal px-3 py-1 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-0.5 rounded-full"
+        >
+          <HelpCircle className="w-2.5 h-2.5" />
+          <span>Explain Graphs</span>
+        </button>
       </div>
 
-      {/* Input box */}
-      <div className="flex gap-2 z-10 flex-shrink-0">
+      {/* Input box (ChatGPT Pill Style) */}
+      <div className="flex items-center gap-2 z-10 flex-shrink-0 bg-white border-2 border-neutral-200 rounded-full pl-4 pr-1.5 py-1.5 focus-within:border-charcoal transition-colors">
         <input
           type="text"
           value={inputValue}
@@ -366,12 +421,12 @@ const AIProf = ({ selectedBody, activePreset = 'none', isPlaying = true }) => {
           }}
           placeholder="Ask Prof. Vector a dynamics question..."
           disabled={isLoading}
-          className="flex-1 bg-[#F7F4EB] text-charcoal border-3 border-charcoal px-3 py-1.5 text-xs font-bold focus:outline-none focus:bg-white placeholder-charcoal/40 disabled:opacity-50"
+          className="flex-1 bg-transparent text-charcoal text-xs md:text-[13px] font-medium focus:outline-none placeholder-charcoal/40 disabled:opacity-50 border-none outline-none"
         />
         <button
           onClick={() => handleSendQuery(inputValue)}
           disabled={isLoading || !inputValue.trim()}
-          className="bg-brutalYellow text-charcoal border-3 border-charcoal px-3 py-1.5 font-bold hover:bg-yellow-300 transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center"
+          className="w-8 h-8 rounded-full bg-brutalBlue text-white hover:bg-blue-600 transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center flex-shrink-0"
         >
           <Send className="w-3.5 h-3.5" />
         </button>

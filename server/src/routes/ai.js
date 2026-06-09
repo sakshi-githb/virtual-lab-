@@ -153,6 +153,21 @@ const getLocalResponse = (message, activePreset, selectedBody, isPlaying) => {
  ${selectedBody ? `- **Inspection**: You have selected **${selectedBody.labelName}** (${selectedBody.shapeType || 'body'}) at coordinate **(${selectedBody.position?.x || 0}, ${selectedBody.position?.y || 0})** with velocity **(${selectedBody.velocity?.x || 0}, ${selectedBody.velocity?.y || 0}) m/s**.` : '- **Tip**: Spawn shapes from the left bar, drag them to throw, and click them to view graphs!'}`;
        insight = "Adjust gravity on the Top Bar to see how objects float or drop.";
      }
+  } else if (
+    normalizedMsg.includes('graph') || 
+    normalizedMsg.includes('sinewave') || 
+    normalizedMsg.includes('sine wave') || 
+    normalizedMsg.includes('chart') || 
+    normalizedMsg.includes('curve')
+  ) {
+    responseText = `### 📊 How to Read & Analyze the Kinematics Graphs:
+
+In **VIRTUAL-LAB**, the right panel plots dynamic curves over time:
+- **Velocity X (m/s)**: Plots the rate of change of position. For oscillating rigs (like pendulums and springs), it creates a perfect **sinusoidal wave** crossing positive (moving right) and negative (moving left) velocities.
+- **Displacement X (m)**: Plots the horizontal distance from the equilibrium point. In Simple Harmonic Motion, displacement and velocity are **90° out of phase**—when displacement is at its peak (the stretch limit), velocity is exactly zero!
+- **Speed (m/s)**: Plots absolute speed magnitude. It peaks at the center equilibrium point where potential energy is fully converted to kinetic energy.
+- **Energy Conservation (Analytics)**: Shows that as Potential Energy ($E_p = mgh$) drops, Kinetic Energy ($E_k = 0.5mv^2$) rises, but their sum (Total Energy) remains constant, demonstrating conservation of energy.`;
+    insight = "Graph Insight: Velocity is zero at maximum displacement peaks.";
   } else if (normalizedMsg.includes('gravity') || normalizedMsg.includes('g-force')) {
     responseText = `### 🌍 Understanding Gravity:
 
@@ -338,6 +353,9 @@ Formatting guidelines:
           });
           return;
         }
+      } else {
+        const errorText = await response.text();
+        console.error(`[OpenAI API Error]: Status ${response.status} - ${errorText}`);
       }
     } catch (err) {
       console.error("[OpenAI Error]: Fallback active.", err);
@@ -345,6 +363,9 @@ Formatting guidelines:
   }
 
   // 3. Fallback: Local rule-based engine
+  if (!geminiKey && !openaiKey) {
+    console.log("ℹ️ [AI Tutor] No GEMINI_API_KEY or OPENAI_API_KEY found in server/.env. Using local rules-based fallback engine.");
+  }
   const localOutput = getLocalResponse(message, activePreset, selectedBody, isPlaying);
   res.status(200).json(localOutput);
 });

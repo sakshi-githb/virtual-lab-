@@ -3,6 +3,8 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRouter from './routes/auth.js';
 import aiRouter from './routes/ai.js';
 import experimentRouter from './routes/experiments.js';
@@ -39,6 +41,21 @@ app.get('/health', (req, res) => {
     service: 'VIRTUAL-LAB Backend API'
   });
 });
+
+// Resolve __dirname in ES Modules environment
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Production Static assets distribution
+if (process.env.NODE_ENV === 'production') {
+  const clientDistPath = path.resolve(__dirname, '../../client/dist');
+  app.use(express.static(clientDistPath));
+  
+  // Fallback non-API/non-health routes to index.html for client side routing
+  app.get(/^(?!\/api|\/health).*$/, (req, res) => {
+    res.sendFile(path.resolve(clientDistPath, 'index.html'));
+  });
+}
 
 // Wrap Express App in HTTP Server for Sockets integration
 const httpServer = createServer(app);
