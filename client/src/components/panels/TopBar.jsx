@@ -30,7 +30,7 @@ const TopBar = ({
   onToggleGuide
 }) => {
   return (
-    <div className="w-full flex items-center justify-between gap-4 card-brutal bg-white py-3 px-5 mb-4 select-none">
+    <div className="w-full flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4 card-brutal bg-white p-3 md:py-3 md:px-5 mb-4 select-none">
       {/* Brand Identity */}
       <div className="flex items-center gap-3">
         <div className="bg-brutalYellow border-3 border-charcoal p-1.5 shadow-brutal-sm font-bold flex items-center justify-center">
@@ -45,7 +45,7 @@ const TopBar = ({
       </div>
 
       {/* Multiplayer Room HUD */}
-      <div className="flex items-center gap-3 bg-brutalYellow/10 border-3 border-charcoal px-3 py-1.5 shadow-brutal-sm">
+      <div className="flex items-center gap-2.5 bg-brutalYellow/10 border-3 border-charcoal px-2.5 py-1.5 shadow-brutal-sm">
         <Globe className="w-5 h-5 text-charcoal animate-spin" style={{ animationDuration: '8s' }} />
         <div className="flex flex-col">
           <span className="text-[10px] font-bold text-charcoal/50 uppercase leading-none">Active Room</span>
@@ -62,7 +62,7 @@ const TopBar = ({
       </div>
 
       {/* Simulation Controls */}
-      <div className="flex items-center gap-2 border-r-3 border-charcoal/20 pr-4">
+      <div className="flex items-center gap-1.5 md:gap-2 md:border-r-3 md:border-charcoal/20 pr-0 md:pr-4 flex-wrap justify-center">
         <button
           onClick={() => setIsPlaying(true)}
           className={`px-3 py-1.5 font-bold flex items-center gap-1.5 border-3 border-charcoal shadow-brutal-sm transition-all duration-100 ${
@@ -72,7 +72,7 @@ const TopBar = ({
           }`}
         >
           <Play className="w-4 h-4 fill-current" />
-          <span>Play</span>
+          <span className="hidden sm:inline">Play</span>
         </button>
 
         <button
@@ -84,7 +84,7 @@ const TopBar = ({
           }`}
         >
           <Pause className="w-4 h-4 fill-current" />
-          <span>Pause</span>
+          <span className="hidden sm:inline">Pause</span>
         </button>
 
         <button
@@ -93,7 +93,7 @@ const TopBar = ({
           title="Reset Simulation"
         >
           <RotateCcw className="w-4 h-4" />
-          <span>Reset</span>
+          <span className="hidden sm:inline">Reset</span>
         </button>
 
         <button
@@ -102,7 +102,7 @@ const TopBar = ({
           title="Open System Analytics & Telemetry"
         >
           <Activity className="w-4 h-4" />
-          <span>Analytics</span>
+          <span className="hidden md:inline">Analytics</span>
         </button>
 
         <button
@@ -115,7 +115,7 @@ const TopBar = ({
           title="Toggle AI Professor floating helper"
         >
           <Brain className="w-4 h-4" />
-          <span>AI Prof</span>
+          <span className="hidden lg:inline">AI Prof</span>
         </button>
 
         <button
@@ -128,7 +128,7 @@ const TopBar = ({
           title="Toggle Lab Manual Guide floating helper"
         >
           <BookOpen className="w-4 h-4" />
-          <span>Lab Guide</span>
+          <span className="hidden lg:inline">Lab Guide</span>
         </button>
       </div>
 
@@ -141,7 +141,7 @@ const TopBar = ({
             title="Save sandbox to Cloud"
           >
             <Save className="w-4 h-4" />
-            <span>Save</span>
+            <span className="hidden sm:inline">Save</span>
           </button>
           <button
             onClick={onLoad}
@@ -149,7 +149,7 @@ const TopBar = ({
             title="Load sandboxes"
           >
             <FolderOpen className="w-4 h-4" />
-            <span>Load</span>
+            <span className="hidden sm:inline">Load</span>
           </button>
         </div>
 
