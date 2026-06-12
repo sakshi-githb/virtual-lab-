@@ -285,7 +285,7 @@ function App() {
   return (
     <div className="w-screen h-screen flex flex-col p-2 md:p-4 bg-cream overflow-hidden dashboard-lock relative font-sans select-none">
       {/* Toast Notifications */}
-      <div className="absolute top-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
+      <div className="absolute top-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
         {notifications.map((n) => (
           <div
             key={n.id}
@@ -298,7 +298,7 @@ function App() {
           </div>
         ))}
       </div>
-
+ 
       {/* Top Header Command Bar */}
       <div className="flex gap-4 mb-4 select-none flex-shrink-0">
         <div className="flex-1 min-w-0">
@@ -342,7 +342,7 @@ function App() {
           <span className="hidden sm:inline">Exit Lab</span>
         </button>
       </div>
-
+ 
       {/* Main Sandbox Layout Area (Viewport height locked, flex-1 min-h-0 to allow proper scaling without scrollbars) */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 relative overflow-hidden flex-shrink-0">
         
@@ -353,7 +353,7 @@ function App() {
             className="lg:hidden absolute inset-0 bg-charcoal/30 z-30 transition-opacity backdrop-blur-xs cursor-pointer"
           />
         )}
-
+ 
         {/* COLUMN 1: LEFT TOOLBAR SIDEBAR (Runs full height) */}
         <div className={`
           flex-shrink-0 z-[60] transition-transform duration-200 ease-out h-full
@@ -369,7 +369,7 @@ function App() {
             onSpawnPreset={handleSpawnPreset}
           />
         </div>
-
+ 
         {/* COLUMN 2: CENTER SIMULATION COLUMN (Canvas + Bottom panel directly underneath) */}
         <div className="flex-1 min-w-0 h-full flex flex-col gap-4">
           
@@ -384,7 +384,7 @@ function App() {
             >
               {isLeftOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-
+ 
             {/* MOBILE TOGGLE: Right Inspector Trigger */}
             <button
               onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
@@ -393,7 +393,7 @@ function App() {
             >
               {isRightOpen ? <X className="w-5 h-5" /> : <Brain className="w-5 h-5 fill-current" />}
             </button>
-
+ 
             <PhysicsCanvas
               ref={canvasRef}
               onSelectBody={setSelectedBody}
@@ -401,7 +401,7 @@ function App() {
               activeColor={activeColor}
             />
           </div>
-
+ 
           {/* Bottom Panel (Lobby / Chat Room) - Locked directly underneath canvas only in collaborative mode */}
           {labMode === 'collaborative' && (
             isChatOpen ? (
@@ -428,7 +428,7 @@ function App() {
             )
           )}
         </div>
-
+ 
         {/* COLUMN 3: RIGHT SIDEBAR COLUMN (Inspector, runs full height) */}
         <div className={`
           flex-shrink-0 z-[60] transition-transform duration-200 ease-out h-full
@@ -442,10 +442,10 @@ function App() {
             />
           </div>
         </div>
-
+ 
         {/* Floating AI Professor Widget */}
         {isAIOpen && (
-          <div className="fixed bottom-6 right-6 z-50 w-80 md:w-96 h-[480px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-160px)]">
+          <div className="fixed bottom-6 right-6 lg:right-[336px] z-50 w-80 md:w-96 h-[480px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-160px)]">
             <AIProf 
               selectedBody={selectedBody} 
               activePreset={activePreset}
@@ -454,10 +454,10 @@ function App() {
             />
           </div>
         )}
-
+ 
         {/* Floating Lab Guide Widget */}
         {isGuideOpen && (
-          <div className="fixed bottom-6 left-28 z-50 w-80 md:w-96 h-[480px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-160px)]">
+          <div className="fixed bottom-6 left-6 sm:left-28 lg:left-[304px] z-50 w-80 md:w-96 h-[480px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-160px)]">
             <NotebookPanel 
               onSpawnPreset={handleSpawnPreset} 
               onClose={() => setIsGuideOpen(false)}
