@@ -43,6 +43,10 @@ function App() {
   const [isLeftOpen, setIsLeftOpen] = useState(false);
   const [isRightOpen, setIsRightOpen] = useState(false);
 
+  // Mobile optimization states
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(window.innerWidth >= 1024);
+
   // App States
   const [selectedTool, setSelectedTool] = useState('select');
   const [activeColor, setActiveColor] = useState('#FACC15'); // default brutalYellow
@@ -56,6 +60,13 @@ function App() {
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+
+  // Check if opened on mobile/tablet to display warning popup
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setShowMobileWarning(true);
+    }
+  }, []);
 
   // Trigger physics loops when play state updates
   useEffect(() => {
@@ -271,7 +282,7 @@ function App() {
   }
 
   return (
-    <div className="w-screen h-screen flex flex-col p-4 bg-cream overflow-hidden dashboard-lock relative font-sans select-none">
+    <div className="w-screen h-screen flex flex-col p-2 md:p-4 bg-cream overflow-hidden dashboard-lock relative font-sans select-none">
       {/* Toast Notifications */}
       <div className="absolute top-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
         {notifications.map((n) => (
@@ -345,7 +356,7 @@ function App() {
         {/* COLUMN 1: LEFT TOOLBAR SIDEBAR (Runs full height) */}
         <div className={`
           flex-shrink-0 z-40 transition-transform duration-200 ease-out h-full
-          fixed lg:static top-0 left-0
+          fixed lg:static top-0 left-0 w-72 bg-cream lg:bg-transparent p-4 lg:p-0 border-r-3 lg:border-r-0 border-charcoal lg:border-none shadow-brutal lg:shadow-none
           ${isLeftOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <LeftToolbar
@@ -392,9 +403,28 @@ function App() {
 
           {/* Bottom Panel (Lobby / Chat Room) - Locked directly underneath canvas only in collaborative mode */}
           {labMode === 'collaborative' && (
-            <div className="flex-shrink-0 h-48">
-              <BottomPanel />
-            </div>
+            isChatOpen ? (
+              <div className="flex-shrink-0 h-48 flex flex-col">
+                <button 
+                  onClick={() => setIsChatOpen(false)}
+                  className="lg:hidden text-left bg-brutalBlue text-white border-3 border-charcoal px-3 py-1 font-extrabold text-[10px] uppercase tracking-wider mb-2 flex items-center justify-between shadow-brutal-sm cursor-pointer"
+                >
+                  <span>💬 Collaborative Chat & Players ({socketUsers.length})</span>
+                  <span>[Hide Chat]</span>
+                </button>
+                <div className="flex-1 min-h-0">
+                  <BottomPanel />
+                </div>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setIsChatOpen(true)}
+                className="lg:hidden flex-shrink-0 text-left bg-brutalBlue text-white border-3 border-charcoal px-3 py-2 font-extrabold text-xs uppercase tracking-wider flex items-center justify-between shadow-brutal-sm cursor-pointer"
+              >
+                <span>💬 Show Chat & Players ({socketUsers.length})</span>
+                <span className="bg-white text-charcoal border-2 border-charcoal px-2 py-0.5 text-[9px] rounded-none">OPEN</span>
+              </button>
+            )
           )}
         </div>
 
@@ -453,6 +483,29 @@ function App() {
           onLoad={handleLoadExperiment}
           showNotification={showNotification}
         />
+
+        {/* Mobile Warning Popup */}
+        {showMobileWarning && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-charcoal/70 backdrop-blur-xs select-none animate-in fade-in duration-100">
+            <div className="w-full max-w-sm bg-white border-4 border-charcoal shadow-brutal-xl p-6 relative flex flex-col gap-4 text-left rounded-none animate-in zoom-in-95 duration-100">
+              <div className="bg-brutalYellow text-charcoal border-3 border-charcoal p-3 shadow-brutal-sm font-black text-sm uppercase tracking-wider text-center">
+                ⚠️ Responsiveness Notice
+              </div>
+              <p className="font-mono text-xs text-charcoal leading-relaxed font-bold">
+                VIRTUAL-LAB is optimized for desktop environments due to its complex physics modeler, side panels, and canvas drag gestures.
+              </p>
+              <p className="font-mono text-[11px] text-charcoal/80 leading-relaxed">
+                We are actively working on mobile responsiveness. The physics sandbox has been maximized below for your workspace.
+              </p>
+              <button
+                onClick={() => setShowMobileWarning(false)}
+                className="btn-brutal bg-brutalGreen text-white text-xs py-2.5 font-black uppercase tracking-wider mt-2 hover:bg-emerald-600 cursor-pointer"
+              >
+                Got it, let's explore!
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
