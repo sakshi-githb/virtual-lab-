@@ -51,7 +51,10 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     }
 
     try {
-      const endpoint = activeMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const endpoint = activeMode === 'register' 
+        ? `${API_URL}/api/auth/register` 
+        : `${API_URL}/api/auth/login`;
       const bodyPayload = activeMode === 'register'
         ? { name: formData.name, email: formData.email, password: formData.password }
         : { email: formData.email, password: formData.password };

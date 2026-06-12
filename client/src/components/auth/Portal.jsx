@@ -58,7 +58,10 @@ const Portal = ({ onEnterWorkspace }) => {
     }
  
     try {
-      const endpoint = authMethod === 'register' ? '/api/auth/register' : '/api/auth/login';
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const endpoint = authMethod === 'register' 
+        ? `${API_URL}/api/auth/register` 
+        : `${API_URL}/api/auth/login`;
       const bodyPayload = authMethod === 'register'
         ? { name: formData.name, email: formData.email, password: formData.password }
         : { email: formData.email, password: formData.password };

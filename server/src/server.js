@@ -77,4 +77,21 @@ httpServer.listen(PORT, () => {
   console.log(`🧪 VIRTUAL-LAB server listening on port: ${PORT}`);
   console.log(`📡 Health Check URL: http://localhost:${PORT}/health`);
   console.log(`==================================================`);
+
+  // Self-ping keeping-awake mechanism (prevents free tiers from sleeping)
+  if (process.env.SELF_PING_URL) {
+    const pingInterval = 14 * 60 * 1000; // 14 minutes
+    console.log(`📡 Self-ping keep-awake active. Target URL: ${process.env.SELF_PING_URL}/health`);
+    
+    // Immediate initial ping
+    fetch(`${process.env.SELF_PING_URL}/health`)
+      .then(res => console.log(`[Self-Ping] Initial Heartbeat OK (Status: ${res.status})`))
+      .catch(err => console.warn(`[Self-Ping] Initial Heartbeat failed: ${err.message}`));
+
+    setInterval(() => {
+      fetch(`${process.env.SELF_PING_URL}/health`)
+        .then(res => console.log(`[Self-Ping] Heartbeat OK (Status: ${res.status})`))
+        .catch(err => console.warn(`[Self-Ping] Heartbeat failed: ${err.message}`));
+    }, pingInterval);
+  }
 });

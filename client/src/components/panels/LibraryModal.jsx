@@ -28,7 +28,8 @@ const LibraryModal = ({ isOpen, onClose, onLoad, showNotification }) => {
         return;
       }
 
-      const response = await fetch('/api/experiments', {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_URL}/api/experiments`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -65,7 +66,8 @@ const LibraryModal = ({ isOpen, onClose, onLoad, showNotification }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/experiments/${id}`, {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_URL}/api/experiments/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

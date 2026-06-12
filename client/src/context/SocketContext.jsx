@@ -24,7 +24,8 @@ export const SocketProvider = ({ children }) => {
     // Note: Socket.io uses '/socket.io/' path by default. Our Vite proxy will route it if set up.
     // Wait! Let's check if the server is on port 5000. In development, we can connect directly to http://localhost:5000
     // so we don't have to worry about socket proxying issues in some Vite versions.
-    const socketInstance = io('http://localhost:5000', {
+    const BACKEND_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? window.location.origin : 'http://localhost:5000');
+    const socketInstance = io(BACKEND_URL, {
       autoConnect: true,
       transports: ['websocket']
     });
