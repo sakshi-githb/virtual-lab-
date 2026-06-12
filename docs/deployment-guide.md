@@ -20,7 +20,7 @@ Ensure the following environment variables are configured in your production das
 | :--- | :---: | :--- | :--- |
 | `NODE_ENV` | Yes | Set to `production` to activate static asset serving and optimized fallback routing. | `production` |
 | `PORT` | Yes | The port the Express HTTP server binds to. | `5000` (or dynamically set by platform) |
-| `MONGODB_URI` | Yes | MongoDB Connection string. | `mongodb+srv://user:pass@cluster.mongodb.net/virtual-lab` |
+| `MONGODB_URI` | Yes | MongoDB Connection string. **Do not wrap this in quotes (e.g. `"` or `'`) when entering it in the dashboard.** | `mongodb+srv://user:pass@cluster.mongodb.net/virtual-lab` |
 | `JWT_SECRET` | Yes | A cryptographically secure secret used for signing user authentication tokens. | `your_super_secret_jwt_key` |
 | `GEMINI_API_KEY` | No | Google Gemini API Key used for the live physics professor. | `AIzaSy...` (Falls back to local rules-based engine if missing) |
 
