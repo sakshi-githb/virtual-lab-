@@ -1387,10 +1387,6 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
         renderRef.current.canvas.style.height = h + 'px';
       }
 
-      if (mouse) {
-        Matter.Mouse.updateOffset(mouse);
-      }
-
       setDebugInfo(prev => ({ ...prev, w: Math.round(w), h: Math.round(h) }));
       
 
