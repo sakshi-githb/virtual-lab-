@@ -1531,7 +1531,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
         </div>
 
         {/* Diagnostic Debug HUD (Brutal styled) */}
-        <div className="absolute bottom-4 left-4 bg-white border-3 border-charcoal p-2.5 font-mono text-[9px] z-50 shadow-brutal-sm pointer-events-auto select-none text-left flex flex-col gap-0.5">
+        <div className="absolute bottom-4 left-4 bg-white border-3 border-charcoal p-2.5 font-mono text-[9px] z-20 shadow-brutal-sm pointer-events-auto select-none text-left flex flex-col gap-0.5">
           <div className="font-extrabold uppercase border-b-2 border-charcoal/20 pb-1 mb-1 text-[10px]">🛠️ Debug HUD</div>
           <div>Size: {debugInfo.w}x{debugInfo.h}</div>
           <div>Mouse: ({debugInfo.mouseX}, {debugInfo.mouseY})</div>

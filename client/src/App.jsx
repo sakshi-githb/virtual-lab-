@@ -355,7 +355,7 @@ function App() {
 
         {/* COLUMN 1: LEFT TOOLBAR SIDEBAR (Runs full height) */}
         <div className={`
-          flex-shrink-0 z-40 transition-transform duration-200 ease-out h-full
+          flex-shrink-0 z-[60] transition-transform duration-200 ease-out h-full
           fixed lg:static top-0 left-0 w-72 bg-cream lg:bg-transparent p-4 lg:p-0 border-r-3 lg:border-r-0 border-charcoal lg:border-none shadow-brutal lg:shadow-none
           ${isLeftOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
@@ -430,7 +430,7 @@ function App() {
 
         {/* COLUMN 3: RIGHT SIDEBAR COLUMN (Inspector, runs full height) */}
         <div className={`
-          flex-shrink-0 z-40 transition-transform duration-200 ease-out h-full
+          flex-shrink-0 z-[60] transition-transform duration-200 ease-out h-full
           fixed lg:static top-0 right-0 w-80 bg-cream lg:bg-transparent p-4 lg:p-0 border-l-3 lg:border-l-0 border-charcoal lg:border-none shadow-brutal lg:shadow-none
           ${isRightOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         `}>
