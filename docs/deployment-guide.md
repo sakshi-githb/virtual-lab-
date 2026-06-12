@@ -46,53 +46,57 @@ cd server && npm start
 
 ## 4. Platform Deployment Settings
 
-### Option A: Railway
-1. Click **New Project** and select **Deploy from GitHub repository**.
-2. Under **Variables**, add all values listed in the Environment Configurations section.
-3. In **Settings**, set the **Build Command** to:
-   ```bash
-   cd client && npm install && npm run build && cd ../server && npm install
-   ```
-4. Set the **Start Command** to:
-   ```bash
-   cd server && npm start
-   ```
-5. Railway will automatically expose the service under a public domain with SSL.
+### Option A: 100% Free Split Deployment (Netlify + Render/Koyeb)
+For a completely free hosting stack, deploy the static frontend React client on **Netlify** and the backend Express WebSockets server on **Render** or **Koyeb**.
 
-### Option B: Split Deployment (Netlify + Railway)
-For hosting the frontend statically on Netlify CDN and the backend API/WebSockets server on Railway:
+#### 1. Backend: Render (Free Tier with Keep-Awake)
+Render's free tier spins down Node services after 15 minutes of inactivity. However, since we implemented the `SELF_PING_URL` keep-awake script, your server will stay active 24/7.
+1. Sign up for a free account at [Render](https://render.com/).
+2. Click **New** -> **Web Service** and select your GitHub repository.
+3. Configure the following parameters:
+   - **Name**: `virtual-lab-backend`
+   - **Root Directory**: `server`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. Under **Environment Variables**, add:
+   - `NODE_ENV`: `production`
+   - `MONGODB_URI`: (Your MongoDB Atlas connection string)
+   - `JWT_SECRET`: (Your secret token signing key)
+   - `SELF_PING_URL`: Set this to your Render service's generated URL (e.g. `https://virtual-lab-backend.onrender.com`). This ensures the server pings itself every 14 minutes, preventing it from spinning down.
+5. Deploy. Render will expose your server on a public domain with SSL.
 
-#### 1. Backend: Railway Settings
-1. Click **New Project** and select **Deploy from GitHub repository**.
-2. Under **Variables**, add all required backend variables:
-   - `NODE_ENV=production`
-   - `PORT=5000` (or leave it to Railway default)
-   - `MONGODB_URI`
-   - `JWT_SECRET`
-   - `GEMINI_API_KEY` (optional)
-   - `SELF_PING_URL` (optional: Set this to your Railway service's public domain URL, e.g. `https://virtual-lab-backend.up.railway.app`. This enables the built-in self-ping script to request `/health` every 14 minutes, keeping the backend active and awake).
-3. In **Settings**, configure:
-   - **Build Command**: `cd server && npm install`
-   - **Start Command**: `cd server && npm start`
-4. Copy the public domain URL Railway generates for your service.
+#### 2. Backend: Koyeb (Free Tier - No Sleep)
+Koyeb is a high-performance free cloud host that does *not* put services to sleep on their free tier.
+1. Sign up for a free account at [Koyeb](https://www.koyeb.com/).
+2. Click **Create Service** -> select Github and choose your repository.
+3. Configure the parameters:
+   - **Builder**: `Node.js`
+   - **Work Directory**: `server`
+   - **Build Command**: `npm install`
+   - **Run Command**: `npm start`
+4. Under **Environment Variables**, add `NODE_ENV=production`, `MONGODB_URI`, and `JWT_SECRET`.
+5. Deploy. Copy the public domain URL Koyeb generates for your app.
 
-#### 2. Frontend: Netlify Settings
-1. Click **Add New Site** -> **Import an existing project** from GitHub.
-2. Select your repository.
+#### 3. Frontend: Netlify (Free Static Hosting)
+Netlify is completely free and fast for hosting compiled static frontends.
+1. Sign up at [Netlify](https://www.netlify.com/).
+2. Click **Add New Site** -> **Import an existing project** from GitHub.
 3. Configure the build parameters:
    - **Base Directory**: `client`
    - **Build Command**: `npm run build`
    - **Publish Directory**: `client/dist` (or `dist` relative to the base `client` folder)
 4. Under **Environment Variables**, add:
-   - `VITE_API_URL`: Set this to your Railway backend's public domain URL copied in the previous step (e.g. `https://virtual-lab-backend.up.railway.app`). (Note: do not add a trailing slash `/`).
-5. Deployment will start automatically. Netlify will serve the frontend. The `client/public/_redirects` file we created handles index.html routing fallback for paths like `/dashboard`.
+   - `VITE_API_URL`: Set this to your Render or Koyeb backend's public URL (e.g. `https://virtual-lab-backend.onrender.com` or `https://virtual-lab.koyeb.app`). *Do not add a trailing slash.*
+5. Deploy. Netlify will host the frontend statically. The `client/public/_redirects` file we created handles page routing fallbacks.
 
 ---
 
 ## 5. Post-Deployment Verification
 To ensure your deployment is healthy:
-1. Navigate to your Railway backend domain's health route (e.g., `https://your-backend.railway.app/health`). You should receive a JSON payload with `status: "online"`.
-2. Access your Netlify site URL (e.g., `https://your-site.netlify.app/`). The React Brutalist portal should load cleanly.
-3. Open Developer Tools (Network tab) and register a user. Confirm request destinations point to your Railway API server instead of localhost.
-4. Try creating a laboratory classroom and opening a template. Confirm WebSockets sync cleanly between windows.
+1. Navigate to your backend domain's health route (e.g., `https://your-backend.onrender.com/health`). You should receive a JSON payload with `status: "online"`.
+2. Access your Netlify site URL (e.g., `https://your-site.netlify.app/`). The React Brutalist portal should load.
+3. Open Developer Tools (Network tab) and verify auth/experiments requests resolve to your Render/Koyeb backend instead of localhost.
+4. Try creating a collaborative room and confirm Socket.io exchanges sync cleanly.
+
 
