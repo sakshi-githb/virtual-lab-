@@ -706,11 +706,11 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
     // Serializes the current active canvas state (ignoring static borders)
     serializeWorld: () => {
       const engine = engineRef.current;
-      if (!engine) return { gravityY: 1.0, bodies: [] };
+      if (!engine) return { gravityY: 1.0, bodies: [], constraints: [] };
 
       const activeBodies = engine.world.bodies.filter(b => !b.isBoundary);
       
-      const serialized = activeBodies.map(b => {
+      const serializedBodies = activeBodies.map(b => {
         const shapeType = b.shapeType || 'polygon';
         return {
           syncId: b.syncId || `${Date.now()}-${shapeType}-${Math.random().toString(36).substr(2, 9)}`,
@@ -733,20 +733,48 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
         };
       });
 
+      const activeConstraints = engine.world.constraints.filter(c => {
+        if (mouseConstraintRef.current && (c === mouseConstraintRef.current || c === mouseConstraintRef.current.constraint)) {
+          return false;
+        }
+        if (c.label === 'Mouse Constraint') {
+          return false;
+        }
+        return true;
+      });
+
+      const serializedConstraints = activeConstraints.map(c => {
+        return {
+          bodyAId: c.bodyA ? c.bodyA.syncId : null,
+          bodyBId: c.bodyB ? c.bodyB.syncId : null,
+          pointA: c.pointA ? { x: c.pointA.x, y: c.pointA.y } : { x: 0, y: 0 },
+          pointB: c.pointB ? { x: c.pointB.x, y: c.pointB.y } : { x: 0, y: 0 },
+          length: c.length,
+          stiffness: c.stiffness,
+          damping: c.damping || 0,
+          color: c.render && c.render.strokeStyle ? c.render.strokeStyle : '#1A1A1A',
+          lineWidth: c.render && c.render.lineWidth ? c.render.lineWidth : 3,
+          label: c.label || ''
+        };
+      });
+
       return {
         gravityY: engine.gravity.y,
-        bodies: serialized
+        bodies: serializedBodies,
+        constraints: serializedConstraints
       };
     },
 
     // Deserializes a loaded layout into Matter.js engine world
-    deserializeWorld: (bodiesList, gravityY = 1.0, isRemote = false) => {
+    deserializeWorld: (bodiesList = [], gravityY = 1.0, isRemote = false, constraintsList = []) => {
       const engine = engineRef.current;
       if (!engine) return;
 
       performResetWorld(isRemote);
 
       engine.gravity.y = parseFloat(gravityY !== undefined ? gravityY : 1.0);
+
+      const bodyMap = {};
 
       bodiesList.forEach(b => {
         try {
@@ -797,16 +825,49 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
             }
 
             Matter.Composite.add(engine.world, body);
+            bodyMap[body.syncId] = body;
           }
         } catch (err) {
           console.error(`[Deserialize Body Error] Failed to reconstruct body:`, err);
         }
       });
 
+      if (constraintsList && Array.isArray(constraintsList)) {
+        constraintsList.forEach(c => {
+          try {
+            const bodyA = c.bodyAId ? bodyMap[c.bodyAId] : null;
+            const bodyB = c.bodyBId ? bodyMap[c.bodyBId] : null;
+
+            if (c.bodyAId && !bodyA) return;
+            if (c.bodyBId && !bodyB) return;
+
+            const constraintOptions = {
+              bodyA: bodyA || undefined,
+              bodyB: bodyB || undefined,
+              pointA: c.pointA,
+              pointB: c.pointB,
+              length: c.length,
+              stiffness: c.stiffness,
+              damping: c.damping !== undefined ? c.damping : 0,
+              label: c.label || 'Constraint',
+              render: {
+                strokeStyle: c.color || '#1A1A1A',
+                lineWidth: c.lineWidth || 3
+              }
+            };
+
+            const constraint = Matter.Constraint.create(constraintOptions);
+            Matter.Composite.add(engine.world, constraint);
+          } catch (err) {
+            console.error(`[Deserialize Constraint Error] Failed to reconstruct constraint:`, err);
+          }
+        });
+      }
+
       if (!isRemote && roomCodeRef.current && socketRef.current) {
         socketRef.current.emit('physics:action', {
           actionType: 'loadLayout',
-          data: { gravityY, bodies: bodiesList }
+          data: { gravityY, bodies: bodiesList, constraints: constraintsList }
         });
       }
     },
@@ -1007,7 +1068,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
             }
             break;
           case 'loadLayout':
-            ref.current?.deserializeWorld(data.bodies, data.gravityY, true);
+            ref.current?.deserializeWorld(data.bodies, data.gravityY, true, data.constraints);
             break;
           default:
             break;
@@ -1078,10 +1139,34 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
           color: b.customColor || '#FACC15'
         }));
 
+      const constraintsData = engine.world.constraints
+        .filter(c => {
+          if (mouseConstraintRef.current && (c === mouseConstraintRef.current || c === mouseConstraintRef.current.constraint)) {
+            return false;
+          }
+          if (c.label === 'Mouse Constraint') {
+            return false;
+          }
+          return true;
+        })
+        .map(c => ({
+          bodyAId: c.bodyA ? c.bodyA.syncId : null,
+          bodyBId: c.bodyB ? c.bodyB.syncId : null,
+          pointA: c.pointA ? { x: c.pointA.x, y: c.pointA.y } : { x: 0, y: 0 },
+          pointB: c.pointB ? { x: c.pointB.x, y: c.pointB.y } : { x: 0, y: 0 },
+          length: c.length,
+          stiffness: c.stiffness,
+          damping: c.damping || 0,
+          color: c.render && c.render.strokeStyle ? c.render.strokeStyle : '#1A1A1A',
+          lineWidth: c.render && c.render.lineWidth ? c.render.lineWidth : 3,
+          label: c.label || ''
+        }));
+
       socket.emit('physics:state-response', {
         requesterSocketId,
         state: {
           bodies: bodiesData,
+          constraints: constraintsData,
           gravityY: engine.gravity.y
         }
       });
@@ -1089,7 +1174,7 @@ const PhysicsCanvas = forwardRef(({ onSelectBody, activeTool, activeColor = '#FA
 
     const handleStateResponse = (state) => {
       if (isHost) return;
-      ref.current?.deserializeWorld(state.bodies, state.gravityY, true);
+      ref.current?.deserializeWorld(state.bodies, state.gravityY, true, state.constraints);
     };
 
     socket.on('physics:action', handleIncomingAction);

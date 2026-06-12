@@ -9,7 +9,7 @@ const router = express.Router();
 // @access  Private (Registered members)
 router.post('/', protect, async (req, res) => {
   try {
-    const { title, description = '', gravityY = 1.0, bodies = [] } = req.body;
+    const { title, description = '', gravityY = 1.0, bodies = [], constraints = [] } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: 'Experiment title is required' });
@@ -20,7 +20,8 @@ router.post('/', protect, async (req, res) => {
       description,
       creator: req.user.id,
       gravityY,
-      bodies
+      bodies,
+      constraints
     });
 
     return res.status(201).json({

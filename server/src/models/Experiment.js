@@ -20,6 +20,25 @@ const bodySchema = new mongoose.Schema({
   color: { type: String, default: '#FACC15' }
 });
 
+const constraintSchema = new mongoose.Schema({
+  bodyAId: { type: String, default: null },
+  bodyBId: { type: String, default: null },
+  pointA: {
+    x: { type: Number, default: 0 },
+    y: { type: Number, default: 0 }
+  },
+  pointB: {
+    x: { type: Number, default: 0 },
+    y: { type: Number, default: 0 }
+  },
+  length: { type: Number },
+  stiffness: { type: Number, default: 1 },
+  damping: { type: Number, default: 0 },
+  color: { type: String, default: '#1A1A1A' },
+  lineWidth: { type: Number, default: 3 },
+  label: { type: String, default: '' }
+});
+
 const experimentSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -40,6 +59,7 @@ const experimentSchema = new mongoose.Schema({
     default: 1.0
   },
   bodies: [bodySchema],
+  constraints: [constraintSchema],
   createdAt: {
     type: Date,
     default: Date.now

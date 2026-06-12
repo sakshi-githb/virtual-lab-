@@ -77,6 +77,20 @@ test('VIRTUAL-LAB API Integration Tests Suite', async (t) => {
             isStatic: false,
             color: '#FACC15'
           }
+        ],
+        constraints: [
+          {
+            bodyAId: 'test-box-id',
+            bodyBId: null,
+            pointA: { x: 0, y: 0 },
+            pointB: { x: 200, y: 100 },
+            length: 150,
+            stiffness: 1,
+            damping: 0,
+            color: '#1A1A1A',
+            lineWidth: 3,
+            label: 'Cable'
+          }
         ]
       };
 
@@ -93,6 +107,9 @@ test('VIRTUAL-LAB API Integration Tests Suite', async (t) => {
       const data = await res.json();
       assert.strictEqual(data.experiment.title, 'Test Integration Sandbox');
       assert.ok(data.experiment._id, 'Saved layout should have an ObjectId');
+      assert.strictEqual(data.experiment.constraints.length, 1);
+      assert.strictEqual(data.experiment.constraints[0].bodyAId, 'test-box-id');
+      assert.strictEqual(data.experiment.constraints[0].label, 'Cable');
       testExperimentId = data.experiment._id;
     });
 

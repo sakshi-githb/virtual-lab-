@@ -231,7 +231,8 @@ function App() {
         body: JSON.stringify({
           title: title.trim(),
           gravityY: serialized.gravityY,
-          bodies: serialized.bodies
+          bodies: serialized.bodies,
+          constraints: serialized.constraints
         })
       });
 
@@ -258,7 +259,7 @@ function App() {
   const handleLoadExperiment = (experiment) => {
     if (canvasRef.current && experiment) {
       setActivePreset('none');
-      canvasRef.current.deserializeWorld(experiment.bodies, experiment.gravityY);
+      canvasRef.current.deserializeWorld(experiment.bodies, experiment.gravityY, false, experiment.constraints);
       showNotification(`Loaded layout: "${experiment.title}"`, 'success');
       setIsLibraryOpen(false);
     }
