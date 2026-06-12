@@ -190,13 +190,13 @@ const AnalyticsModal = ({ isOpen, onClose, canvasRef }) => {
             </div>
 
             {!isChartReady || metricsHistory.length < 2 ? (
-              <div className="h-64 flex items-center justify-center font-mono text-xs font-bold text-charcoal/40">
+              <div className="h-[250px] w-full flex items-center justify-center font-mono text-xs font-bold text-charcoal/40">
                 WAITING FOR SIMULATION RUN AND DYNAMIC TELEMETRY CHECKPOINTS...
               </div>
             ) : (
-              <div className="h-64 w-full font-mono text-[9px] -ml-6 flex-1 min-w-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={metricsHistory}>
+              <div className="h-[250px] w-full font-mono text-[9px] relative">
+                <ResponsiveContainer width="99%" height={250}>
+                  <AreaChart data={metricsHistory} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorKinetic" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15}/>
