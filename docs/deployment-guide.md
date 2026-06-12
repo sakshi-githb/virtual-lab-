@@ -59,19 +59,40 @@ cd server && npm start
    ```
 5. Railway will automatically expose the service under a public domain with SSL.
 
-### Option B: Render
-1. Create a new **Web Service** pointing to your repository.
-2. Select **Node** as the environment.
-3. Configure the following parameters:
-   - **Build Command**: `cd client && npm install && npm run build && cd ../server && npm install`
+### Option B: Split Deployment (Netlify + Railway)
+For hosting the frontend statically on Netlify CDN and the backend API/WebSockets server on Railway:
+
+#### 1. Backend: Railway Settings
+1. Click **New Project** and select **Deploy from GitHub repository**.
+2. Under **Variables**, add all required backend variables:
+   - `NODE_ENV=production`
+   - `PORT=5000` (or leave it to Railway default)
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `GEMINI_API_KEY` (optional)
+   - `SELF_PING_URL` (optional: Set this to your Railway service's public domain URL, e.g. `https://virtual-lab-backend.up.railway.app`. This enables the built-in self-ping script to request `/health` every 14 minutes, keeping the backend active and awake).
+3. In **Settings**, configure:
+   - **Build Command**: `cd server && npm install`
    - **Start Command**: `cd server && npm start`
-4. Add all required keys under **Advanced** -> **Environment Variables**.
-5. Set `PORT` to `10000` (or leave it to Render to inject automatically).
+4. Copy the public domain URL Railway generates for your service.
+
+#### 2. Frontend: Netlify Settings
+1. Click **Add New Site** -> **Import an existing project** from GitHub.
+2. Select your repository.
+3. Configure the build parameters:
+   - **Base Directory**: `client`
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `client/dist` (or `dist` relative to the base `client` folder)
+4. Under **Environment Variables**, add:
+   - `VITE_API_URL`: Set this to your Railway backend's public domain URL copied in the previous step (e.g. `https://virtual-lab-backend.up.railway.app`). (Note: do not add a trailing slash `/`).
+5. Deployment will start automatically. Netlify will serve the frontend. The `client/public/_redirects` file we created handles index.html routing fallback for paths like `/dashboard`.
 
 ---
 
 ## 5. Post-Deployment Verification
 To ensure your deployment is healthy:
-1. Navigate to `https://your-app-domain.com/health`. You should receive a JSON payload with `status: "online"`.
-2. Access the root URL `https://your-app-domain.com/`. The React Brutalist portal should load cleanly.
-3. Try registering a user, creating a lab, and opening a template. Confirm socket room sync functions correctly under spectator mode.
+1. Navigate to your Railway backend domain's health route (e.g., `https://your-backend.railway.app/health`). You should receive a JSON payload with `status: "online"`.
+2. Access your Netlify site URL (e.g., `https://your-site.netlify.app/`). The React Brutalist portal should load cleanly.
+3. Open Developer Tools (Network tab) and register a user. Confirm request destinations point to your Railway API server instead of localhost.
+4. Try creating a laboratory classroom and opening a template. Confirm WebSockets sync cleanly between windows.
+
