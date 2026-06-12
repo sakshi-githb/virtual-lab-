@@ -29,6 +29,19 @@ const AnalyticsModal = ({ isOpen, onClose, canvasRef }) => {
     totalEnergy: 0,
     rawBodiesList: []
   });
+  const [isChartReady, setIsChartReady] = useState(false);
+
+  // Delay chart render until modal transition completes, ensuring parent dimensions are non-zero
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        setIsChartReady(true);
+      }, 200);
+      return () => clearTimeout(timer);
+    } else {
+      setIsChartReady(false);
+    }
+  }, [isOpen]);
 
   // Pull telemetry every 250ms when modal is active
   useEffect(() => {
@@ -176,12 +189,12 @@ const AnalyticsModal = ({ isOpen, onClose, canvasRef }) => {
               </div>
             </div>
 
-            {metricsHistory.length < 2 ? (
+            {!isChartReady || metricsHistory.length < 2 ? (
               <div className="h-64 flex items-center justify-center font-mono text-xs font-bold text-charcoal/40">
                 WAITING FOR SIMULATION RUN AND DYNAMIC TELEMETRY CHECKPOINTS...
               </div>
             ) : (
-              <div className="h-64 w-full font-mono text-[9px] -ml-6 flex-1">
+              <div className="h-64 w-full font-mono text-[9px] -ml-6 flex-1 min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={metricsHistory}>
                     <defs>
