@@ -1,6 +1,16 @@
 # VIRTUAL-LAB: Collaborative 2D Physics Digital Twin
 
-VIRTUAL-LAB is a real-time, multi-user 2D physics sandbox and digital twin environment designed for interactive learning. The platform allows students and instructors to construct mechanical systems, test structural constraints, observe real-time kinematics telemetry, and collaborate inside shared workspace chambers.
+VIRTUAL-LAB is a real-time, multi-user 2D physics sandbox and digital twin environment designed for interactive learning. The platform allows students and instructors to build mechanical systems, test structural constraints, observe real-time kinematics telemetry, and collaborate inside shared workspace chambers.
+
+Live Demo: https://virtualabsakshi.netlify.app/
+
+---
+
+## Live Deployments
+
+* **Frontend Client**: https://virtualabsakshi.netlify.app/ (Deployed on Netlify)
+* **Backend API & WebSockets**: Deployed on Render (Node.js/Express service)
+* **Database**: Deployed on MongoDB Atlas (Cloud database cluster)
 
 ---
 
@@ -13,7 +23,7 @@ VIRTUAL-LAB is a real-time, multi-user 2D physics sandbox and digital twin envir
 
 ## Technical Architecture
 
-VIRTUAL-LAB is built as a decoupled monorepo system:
+The application is built as a monorepo split into two primary components:
 
 ```mermaid
 graph TD
@@ -23,20 +33,37 @@ graph TD
     API -->|LLM Prompts| LLM[Google Gemini / OpenAI APIs]
 ```
 
-* **Client**: React, Vite, and Tailwind CSS. Heavy physics calculations run at 60 FPS in a Matter.js engine isolated from standard React render loops using React refs.
+* **Client**: React, Vite, and Tailwind CSS. The physics calculations run at 60 FPS in a Matter.js engine isolated from standard React render loops using React refs.
 * **Server**: Node.js and Express server managing API sessions, experiment database persistence, socket routing, and AI integrations.
 * **Database**: MongoDB cloud cluster storing credentials, experiment history metadata, and serialized canvas layouts.
 
 ---
 
+## Deployment Configuration
+
+The application is deployed using a split-architecture hosting stack:
+
+1. **Frontend (Netlify)**:
+   * Built and hosted statically.
+   * Utilizes a custom _redirects rule (/* /index.html 200) to allow React Router to manage client-side routing fallback without returning 404 errors.
+   * Connects to the backend via the VITE_API_URL build environment variable.
+
+2. **Backend (Render)**:
+   * Deployed as a web service running Node.js.
+   * Configured with a self-ping keep-awake interval routine: the server makes an HTTP request to its own health endpoint every 14 minutes, preventing Render's free tier from going to sleep due to inactivity.
+
+3. **Database (MongoDB Atlas)**:
+   * Whitelisted for access from anywhere (0.0.0.0/0) to handle Render's dynamic IP address allocation.
+   * Connection strings are automatically sanitized inside the server's db.js to strip outer quotes and whitespace, preventing connection failures caused by dashboard key formatting errors.
+
+---
+
 ## Technical Highlights and Innovations
 
-* **React-to-Matter.js Bridge (60 FPS Performance)**: Standard React state updates and virtual DOM diffing are too slow for high-frequency physics loops. VIRTUAL-LAB instantiates the Matter.js physics engine, runner, and renderer inside React refs, executing changes via a direct imperative API (using forwardRef and useImperativeHandle). This keeps canvas calculations at a locked 60 FPS.
+* **React-to-Matter.js Bridge**: Standard React state updates and virtual DOM diffing are too slow for high-frequency physics loops. VIRTUAL-LAB instantiates the Matter.js physics engine, runner, and renderer inside React refs, executing changes via a direct imperative API (using forwardRef and useImperativeHandle). This keeps canvas calculations at a locked 60 FPS.
 * **30Hz Delta Socket Replication**: To coordinate simulation state among multiple peers, the Room Host broadcasts rigid body attributes (coordinates, angles, velocities) throttled at 30Hz. Spectator clients receive these updates and apply linear interpolation (lerp) at 60Hz, ensuring smooth visual replication.
 * **Mutex Collision Resolution Locks**: Grabbing or dragging a physics body fires a socket event acquiring a room-wide mutex lock. If other students attempt to drag the same object, their constraint is automatically broken. Grabbed objects display a visual red border outline on peers' screens.
 * **Throttled Analytics Sampling**: The inspector plots real-time curves (displacement, velocity) on Recharts line graphs. To prevent DOM repaint chokes, telemetry updates are throttled to 150ms samples (~6.6Hz).
-* **Automated Keep-Alive Heartbeat**: Free tier servers on platforms like Render sleep after 15 minutes of inactivity. We built a native self-ping interval scheduler targeting the deployment URL every 14 minutes, keeping the backend service awake 24/7.
-* **Intelligent Environment Sanitization**: Handled deployment environment string anomalies by automatically sanitizing, trimming, and stripping surrounding quotes from the MONGODB_URI variables to prevent startup database failures.
 
 ---
 
