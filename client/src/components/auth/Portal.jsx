@@ -136,7 +136,14 @@ const Portal = ({ onEnterWorkspace }) => {
             <p className="text-charcoal/80 font-bold max-w-sm text-sm leading-snug">
               A collaborative 2D physics sandbox designed to help engineers and students visually interact with motion, forces, vectors, and digital constraints.
             </p>
-            <div className="mt-4">
+            <div className="mt-4 flex flex-col gap-2">
+              <a
+                href="/physicslab"
+                className="btn-brutal bg-amber-400 hover:bg-amber-300 text-charcoal text-xs py-2.5 uppercase cursor-pointer w-full text-center font-black flex items-center justify-center gap-2 border-3 border-charcoal shadow-brutal-sm"
+              >
+                <Sparkles className="w-4 h-4 fill-current text-charcoal" />
+                <span>Launch State Board Physics Lab (/physicslab)</span>
+              </a>
               <button
                 type="button"
                 onClick={() => setIsResumeOpen(true)}
