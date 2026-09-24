@@ -7,11 +7,13 @@ import {
   Compass,
   BookOpen
 } from 'lucide-react';
+import ResumeModal from './ResumeModal';
 
 const Portal = ({ onEnterWorkspace }) => {
   const [labMode, setLabMode] = useState('solo'); // 'solo' | 'collaborative'
   const [authMethod, setAuthMethod] = useState('guest'); // 'guest' | 'login' | 'register'
   const [roomToJoin, setRoomToJoin] = useState('');
+  const [isResumeOpen, setIsResumeOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -134,6 +136,15 @@ const Portal = ({ onEnterWorkspace }) => {
             <p className="text-charcoal/80 font-bold max-w-sm text-sm leading-snug">
               A collaborative 2D physics sandbox designed to help engineers and students visually interact with motion, forces, vectors, and digital constraints.
             </p>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setIsResumeOpen(true)}
+                className="btn-brutal bg-white hover:bg-cream text-xs py-2 uppercase cursor-pointer w-full text-center"
+              >
+                <span>View Developer CV / Resume</span>
+              </button>
+            </div>
           </div>
 
           {/* Footer stats banner */}
@@ -335,6 +346,8 @@ const Portal = ({ onEnterWorkspace }) => {
         </div>
 
       </div>
+
+      <ResumeModal isOpen={isResumeOpen} onClose={() => setIsResumeOpen(false)} />
     </div>
   );
 };

@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#E8E4DC">
+<title>DAY/31</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#F5F2EB;
+    --ink:#202020;
+    --sub:#6E685E;
+    --surface:#FFFFFF;
+    --surface-lined:#FAF8F4;
+    --yellow:#F4D06F;
+    --pink:#F2A6B0;
+    --blue:#9FC0E8;
+    --green:#A9D6B8;
+    --purple:#C7B8E8;
+    --orange:#F0B27E;
+    --border-width:3px;
+    --neo-shadow:5px 5px 0px var(--ink);
+    --neo-shadow-sm:3px 3px 0px var(--ink);
+    --neo-shadow-inset:inset 2px 2px 0px rgba(0,0,0,0.1);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Nunito',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:none;
+  }
+  .app{max-width:460px; margin:0 auto; min-height:100vh; padding-bottom:92px; border-left: var(--border-width) solid var(--ink); border-right: var(--border-width) solid var(--ink); background: var(--bg);}
+  h1,h2,h3{font-family:'Baloo 2',sans-serif; margin:0; font-weight:800; color:var(--ink);}
+
+  .topbar{background:var(--bg); padding:18px 16px 14px; border-bottom:var(--border-width) solid var(--ink);}
+  .topbar-row1{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+  .app-title{font-size:24px; font-weight:800; font-family:'Baloo 2',sans-serif;}
+  .app-title span{color:var(--orange);}
+  .streak-chip{
+    display:flex; align-items:center; gap:5px; background:var(--yellow); border-radius:12px;
+    padding:6px 12px; font-family:'JetBrains Mono',monospace; font-weight:800; font-size:12.5px;
+    border:var(--border-width) solid var(--ink); box-shadow:var(--neo-shadow-sm);
+  }
+  .xp-block{display:flex; align-items:center; gap:12px;}
+  .level-badge{
+    width:42px; height:42px; border-radius:12px; background:var(--purple);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-family:'Baloo 2',sans-serif; font-weight:800; font-size:16px; border:var(--border-width) solid var(--ink);
+    box-shadow:var(--neo-shadow-sm);
+  }
+  .xp-bar-wrap{flex:1;}
+  .xp-label{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink); font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between;}
+  .xp-bar-track{height:16px; background:var(--surface); border-radius:8px; border:var(--border-width) solid var(--ink); overflow:hidden;}
+  .xp-bar-fill{height:100%; background:var(--orange); border-right:var(--border-width) solid var(--ink); transition:width .4s;}
+
+  .save-strip{
+    display:flex; align-items:center; gap:7px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--ink);
+    font-weight:700; padding:10px 16px; border-bottom:var(--border-width) solid var(--ink); background:var(--surface-lined);
+  }
+  .save-dot{width:8px; height:8px; border-radius:50%; background:var(--green); border:1px solid var(--ink); flex-shrink:0;}
+
+  .screen{display:none; padding:14px 16px;}
+  .screen.active{display:block;}
+
+  .card{
+    background:var(--surface); border-radius:16px; border:var(--border-width) solid var(--ink);
+    box-shadow:var(--neo-shadow); padding:18px; margin-bottom:20px;
+  }
+  .card-tight{padding:14px;}
+  .tag{
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-weight:800; font-size:10px;
+    text-transform:uppercase; letter-spacing:.5px; color:var(--ink); background:var(--yellow);
+    border:2px solid var(--ink); border-radius:6px; padding:2px 6px; margin-bottom:12px;
+    box-shadow:2px 2px 0px var(--ink);
+  }
+
+  .day-nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .day-nav button.arrow{
+    width:40px; height:40px; border-radius:8px; border:var(--border-width) solid var(--ink); background:var(--surface);
+    box-shadow:var(--neo-shadow-sm); font-size:18px; font-weight:800; cursor:pointer; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; transition:all 0.1s;
+  }
+  .day-nav button.arrow:active{transform:translate(2px, 2px); box-shadow:1px 1px 0px var(--ink);}
+  .day-nav .day-display{text-align:center;}
+  .day-nav .day-display .num{font-family:'Baloo 2',sans-serif; font-size:24px; font-weight:800;}
+  .day-nav .day-display .date{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); font-weight:700;}
+
+  .ring-row{display:flex; align-items:center; gap:16px;}
+  .ring{
+    width:74px; height:74px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background: conic-gradient(var(--green) calc(var(--p)*1%), var(--surface) 0);
+    border:var(--border-width) solid var(--ink); box-shadow:var(--neo-shadow-sm);
+  }
+  .ring-inner{
+    width:54px; height:54px; border-radius:50%; background:var(--surface);
+    border:var(--border-width) solid var(--ink); display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px;
+  }
+  .ring-caption{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--sub); font-weight:700; line-height:1.5;}
+  .ring-caption b{font-family:'Baloo 2',sans-serif; font-size:15px; display:block; color:var(--ink);}
+
+  .habit-card{
+    display:flex; align-items:center; gap:12px; border-radius:12px; padding:13px;
+    margin-bottom:14px; background:var(--surface); border:var(--border-width) solid var(--ink);
+    box-shadow:var(--neo-shadow-sm); transition:transform 0.1s;
+  }
+  .habit-card.done{background:var(--yellow);}
+  .checkbox-btn{
+    width:40px; height:40px; border-radius:8px; border:var(--border-width) solid var(--ink); background:var(--surface);
+    flex-shrink:0; cursor:pointer; box-shadow:2px 2px 0px var(--ink);
+    display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--ink);
+    transition:all 0.1s;
+  }
+  .checkbox-btn:active{transform:translate(2px, 2px); box-shadow:0px 0px 0px var(--ink);}
+  .habit-card.done .checkbox-btn{background:var(--ink); color:var(--yellow); box-shadow:none; transform:none;}
+  
+  .habit-info{flex:1; min-width:0;}
+  .habit-info .name{font-weight:800; font-size:15px; display:flex; align-items:center; gap:6px;}
+  .habit-info .dot{width:10px; height:10px; border-radius:50%; border:1px solid var(--ink); flex-shrink:0;}
+  .habit-info .meta{font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700; color:var(--sub); margin-top:3px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .flame{color:var(--orange);}
+  .week-chip{
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:800;
+    background:var(--blue); color:var(--ink); padding:2px 6px; border-radius:6px; border:1px solid var(--ink);
+  }
+  .week-chip.met{background:var(--green);}
+
+  button.btn{
+    font-family:'JetBrains Mono',monospace; font-weight:800; font-size:12.5px; text-transform:uppercase; letter-spacing:.3px;
+    background:var(--surface); color:var(--ink); border:var(--border-width) solid var(--ink); border-radius:12px;
+    padding:12px 16px; cursor:pointer; box-shadow:var(--neo-shadow-sm); transition:all 0.1s;
+  }
+  button.btn:active{transform:translate(2px, 2px); box-shadow:1px 1px 0px var(--ink);}
+  button.btn.yellow{background:var(--yellow);}
+  button.btn.blue{background:var(--blue);}
+  button.btn.green{background:var(--green);}
+  button.btn.pink{background:var(--pink);}
+  button.btn.full{width:100%; display:block; text-align:center;}
+  button.btn.sm{padding:8px 12px; font-size:10.5px; border-radius:8px;}
+
+  input[type=text], input[type=number], input[type=date], select, textarea{
+    font-family:'Nunito',sans-serif; font-size:14px; border:var(--border-width) solid var(--ink); border-radius:12px;
+    padding:11px 13px; background:var(--surface); color:var(--ink); width:100%;
+    box-shadow:var(--neo-shadow-inset); outline:none;
+  }
+  input[type=color]{width:46px; height:46px; border:var(--border-width) solid var(--ink); border-radius:12px; padding:2px; cursor:pointer; flex-shrink:0; background:var(--surface);}
+  label.field-label{font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--ink); display:block; margin-bottom:6px;}
+  .field{margin-bottom:13px;}
+  .row-2{display:flex; gap:10px;}
+  .row-2 > *{flex:1;}
+  .checkline{display:flex; align-items:center; gap:8px; margin-bottom:11px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink); font-weight:700;}
+  .checkline input{
+    width:18px; height:18px; border:var(--border-width) solid var(--ink); border-radius:4px;
+    cursor:pointer; outline:none;
+  }
+
+  .habit-manage-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:2px dashed var(--ink);}
+  .habit-manage-row .dot{width:12px; height:12px; border-radius:50%; border:1px solid var(--ink); flex-shrink:0;}
+  .habit-manage-row .nm{flex:1; font-weight:800; font-size:13.5px;}
+  .habit-manage-row .rm{cursor:pointer; color:var(--pink); font-weight:800; font-size:17px;}
+
+  .badge-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:11px;}
+  .badge{
+    border-radius:12px; padding:12px 6px; text-align:center; background:var(--bg);
+    border:var(--border-width) solid var(--ink); box-shadow:var(--neo-shadow-inset);
+  }
+  .badge.unlocked{background:var(--purple); box-shadow:var(--neo-shadow-sm);}
+  .badge .ic{font-size:23px; display:block; margin-bottom:5px;}
+  .badge .lb{font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:800; text-transform:uppercase; line-height:1.3; color:var(--ink);}
+
+  .cal-boxes{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:9px;}
+  .cal-boxes .d{
+    aspect-ratio:1; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:9px;
+    display:flex; align-items:center; justify-content:center; background:var(--surface);
+    border:2px solid var(--ink); color:var(--ink); font-weight:700;
+  }
+
+  /* gym: full week grid */
+  .week-days-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:7px; margin:10px 0 6px;}
+  .week-days-grid .wd-label{font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; text-align:center; color:var(--ink); margin-bottom:3px;}
+  .gym-day-btn{
+    aspect-ratio:1; border-radius:10px; border:var(--border-width) solid var(--ink); background:var(--surface);
+    box-shadow:var(--neo-shadow-sm); font-family:'Baloo 2',sans-serif; font-weight:800; font-size:13px; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.1s;
+  }
+  .gym-day-btn.on{background:var(--blue);}
+  .gym-day-btn:active{transform:translate(2px, 2px); box-shadow:1px 1px 0px var(--ink);}
+  .gym-day-btn.future{opacity:.4;}
+  
+  .week-block{
+    border-radius:12px; padding:14px; margin-bottom:12px; border:var(--border-width) solid var(--ink);
+    background:var(--surface); box-shadow:var(--neo-shadow-sm);
+  }
+  .week-block.met{background:var(--green);}
+  .week-block .wtitle{font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:800; display:flex; justify-content:space-between; color:var(--ink);}
+
+  /* routines */
+  .routine-card{
+    border-radius:12px; padding:14px; margin-bottom:12px; border:var(--border-width) solid var(--ink);
+    background:var(--surface); box-shadow:var(--neo-shadow-sm);
+  }
+  .routine-head{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .routine-head input[type=text]{font-weight:800; font-family:'Baloo 2',sans-serif; font-size:14.5px; border-bottom:var(--border-width) solid var(--ink); border-radius:0; box-shadow:none; padding:4px;}
+  .routine-head .rm{cursor:pointer; color:var(--pink); font-weight:800; font-size:18px; flex-shrink:0;}
+  .routine-card textarea{min-height:90px; font-size:13.5px; line-height:1.55;}
+
+  .stat-pill{
+    border-radius:12px; padding:11px; text-align:center; border:var(--border-width) solid var(--ink);
+    background:var(--surface); box-shadow:var(--neo-shadow-sm);
+  }
+  .stat-pill .v{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:18px;}
+  .stat-pill .l{font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--ink); font-weight:700; text-transform:uppercase;}
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:15px;}
+
+  .day-strip{display:flex; gap:7px; overflow-x:auto; padding:3px 3px 10px;}
+  .day-strip button{
+    flex-shrink:0; width:40px; height:40px; border-radius:8px; border:var(--border-width) solid var(--ink); background:var(--surface);
+    font-family:'JetBrains Mono',monospace; font-weight:800; font-size:12px; position:relative; box-shadow:var(--neo-shadow-sm); color:var(--ink);
+    cursor:pointer; transition:all 0.1s;
+  }
+  .day-strip button:active{transform:translate(2px, 2px); box-shadow:1px 1px 0px var(--ink);}
+  .day-strip button.active{background:var(--pink);}
+  .day-strip button.has::after{
+    content:""; position:absolute; bottom:4px; left:50%; transform:translateX(-50%);
+    width:6px; height:6px; border-radius:50%; background:var(--blue); border:1px solid var(--ink);
+  }
+  textarea#journalText{
+    min-height:180px; resize:vertical;
+    background-image:linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size:100% 2em; line-height:2em; padding:0.5em 1em; background-color:var(--surface-lined);
+  }
+
+  .empty-note{text-align:center; padding:26px 12px; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--sub); font-weight:700;}
+
+  .bottom-nav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:460px;
+    background:var(--bg); border-top:var(--border-width) solid var(--ink); display:flex; z-index:50;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom,0));
+  }
+  .bottom-nav button{
+    flex:1; background:none; border:none; color:var(--sub); padding:8px 2px; margin:0 3px;
+    display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; border-radius:8px;
+    font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:800; text-transform:uppercase;
+  }
+  .bottom-nav button .ic{font-size:18px;}
+  .bottom-nav button.active{background:var(--surface); border:var(--border-width) solid var(--ink); box-shadow:var(--neo-shadow-sm); color:var(--ink);}
+
+  .confetti-piece{position:fixed; top:-10px; width:9px; height:9px; z-index:200; pointer-events:none; border-radius:3px;}
+  @keyframes fall{ to{ transform:translateY(110vh) rotate(400deg); opacity:0.9; } }
+  .toast{
+    position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--yellow); color:var(--ink);
+    font-family:'JetBrains Mono',monospace; font-weight:800; font-size:12px; border-radius:12px; padding:10px 18px;
+    border:var(--border-width) solid var(--ink); z-index:210; opacity:0; transition:opacity .25s, top .25s; box-shadow:var(--neo-shadow);
+  }
+  .toast.show{opacity:1; top:22px;}
+  ::selection{background:var(--yellow); color:var(--ink);}
+
+  /* Planner toggle & checklist */
+  .planner-toggle {
+    display: flex;
+    border: var(--border-width) solid var(--ink);
+    border-radius: 12px;
+    background: var(--surface);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--neo-shadow-sm);
+  }
+  .planner-toggle button {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 11px;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--sub);
+    transition: all 0.1s;
+  }
+  .planner-toggle button.active {
+    background: var(--yellow);
+    color: var(--ink);
+  }
+  .planner-toggle button:not(:last-child) {
+    border-right: var(--border-width) solid var(--ink);
+  }
+  
+  .weekly-todo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 2px dashed var(--ink);
+  }
+  .weekly-todo-row:last-child {
+    border-bottom: none;
+  }
+  .weekly-todo-row .checkbox-btn-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 2px solid var(--ink);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 1px 1px 0px var(--ink);
+  }
+  .weekly-todo-row.done .checkbox-btn-sm {
+    background: var(--ink);
+    color: var(--yellow);
+    box-shadow: none;
+  }
+  .weekly-todo-row .text {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 700;
+  }
+  .weekly-todo-row.done .text {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+  .weekly-todo-row .rm {
+    cursor: pointer;
+    color: var(--pink);
+    font-weight: 800;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-row1">
+      <div class="app-title">DAY<span>/31</span></div>
+      <div class="streak-chip">🔥 <span id="streakVal">0</span> day streak</div>
+    </div>
+    <div class="xp-block">
+      <div class="level-badge" id="levelBadge">1</div>
+      <div class="xp-bar-wrap">
+        <div class="xp-label"><span id="xpText">0 XP</span><span id="xpNext">next lvl in 150</span></div>
+        <div class="xp-bar-track"><div class="xp-bar-fill" id="xpFill" style="width:0%;"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="save-strip"><span class="save-dot"></span><span id="saveStatus">saved to this device</span></div>
+
+  <!-- HOME -->
+  <section class="screen active" id="screen-home">
+    <div class="planner-toggle">
+      <button id="toggle-daily" class="active">Daily Habits</button>
+      <button id="toggle-weekly">Weekly Planner</button>
+    </div>
+
+    <!-- Daily View Container -->
+    <div id="daily-view">
+      <div class="card card-tight">
+        <div class="day-nav">
+          <button class="arrow" id="prevDay">‹</button>
+          <div class="day-display">
+            <div class="num" id="dayNum">DAY 1</div>
+            <div class="date" id="dayDate">—</div>
+          </div>
+          <button class="arrow" id="nextDay">›</button>
+        </div>
+        <div class="ring-row">
+          <div class="ring" id="dayRing" style="--p:0;"><div class="ring-inner"><span id="dayPctText">0%</span></div></div>
+          <div class="ring-caption">Today's completion<br><b id="dayFraction">0 / 0 habits</b></div>
+        </div>
+      </div>
+      <div id="habitList"></div>
+      <div class="empty-note" id="noHabitsNote" style="display:none;">No habits yet. Go to <b>Progress → Manage Habits</b> to add your first one 💪</div>
+    </div>
+
+    <!-- Weekly Planner View Container (initially hidden) -->
+    <div id="weekly-view" style="display: none;">
+      <div class="card">
+        <span class="tag" style="background:var(--blue);">📈 weekly habits progress</span>
+        <h2 style="font-size:18px; margin-bottom:6px;">WEEKLY COMPLETION</h2>
+        <div id="weekly-habits-summary" style="font-size:14px; line-height:1.5; font-weight:700;"></div>
+      </div>
+      
+      <div class="card">
+        <span class="tag" style="background:var(--pink);">📝 weekly checklist</span>
+        <h2 style="font-size:18px; margin-bottom:12px;">WEEKLY TO-DOS</h2>
+        
+        <div id="weeklyTodoList"></div>
+        
+        <div style="margin-top:16px;">
+          <h3 style="font-size:13px; margin:0 0 8px;">+ Add a weekly task</h3>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="newWeeklyTodoText" placeholder="e.g. Wash workout gear">
+            <button class="btn green" id="addWeeklyTodoBtn" style="padding: 11px 16px;">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GYM -->
+  <section class="screen" id="screen-gym">
+    <div class="card">
+      <span class="tag">🏋️ workout log</span>
+      <h2 style="font-size:18px;">GYM WEEK</h2>
+      <p style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); margin-top:8px;">Tap any day you actually trained — full 7-day week, no cap. Weekly goal habits are tracked by real calendar week below.</p>
+    </div>
+    <div id="gymContent"></div>
+
+    <div class="card">
+      <span class="tag">📋 my routines</span>
+      <h2 style="font-size:16px; margin-bottom:4px;">ROUTINES</h2>
+      <p style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--sub); margin:6px 0 12px;">Write down your splits — push/pull/legs, cardio day, whatever. Edit anytime.</p>
+      <div id="routineList"></div>
+      <button class="btn green full" id="addRoutineBtn">+ Add routine</button>
+    </div>
+  </section>
+
+  <!-- WEIGHT -->
+  <section class="screen" id="screen-weight">
+    <div class="card">
+      <span class="tag">⚖️ log weight</span>
+      <div class="row-2">
+        <div class="field"><label class="field-label">Day</label><select id="weightDay"></select></div>
+        <div class="field"><label class="field-label">Weight (kg)</label><input type="number" step="0.1" id="weightValue" placeholder="68.4"></div>
+      </div>
+      <button class="btn yellow full" id="saveWeightBtn">Save weight</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-pill"><div class="v" id="statStart">–</div><div class="l">Start</div></div>
+      <div class="stat-pill"><div class="v" id="statCurrent">–</div><div class="l">Latest</div></div>
+      <div class="stat-pill"><div class="v" id="statChange">–</div><div class="l">Change</div></div>
+      <div class="stat-pill"><div class="v" id="statLogged">0/31</div><div class="l">Logged</div></div>
+    </div>
+    <div class="card"><canvas id="weightChart" height="170"></canvas></div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="screen" id="screen-journal">
+    <div class="card">
+      <span class="tag">📓 daily notes</span>
+      <div class="day-strip" id="journalDays"></div>
+      <textarea id="journalText" placeholder="Write about today…"></textarea>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="screen" id="screen-progress">
+    <div class="card">
+      <span class="tag">🏆 achievements</span>
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+    <div class="card">
+      <span class="tag">📅 monthly calendars</span>
+      <div id="calWrap"></div>
+    </div>
+    <div class="card">
+      <span class="tag">⚙️ manage habits</span>
+      <div id="habitManageList"></div>
+      <h3 style="font-size:13px; margin:14px 0 8px;">+ Add a habit</h3>
+      <div class="row-2" style="margin-bottom:10px;">
+        <input type="color" id="newHabitColor" value="#9FC0E8">
+        <input type="text" id="newHabitName" placeholder="e.g. Read 20 min">
+      </div>
+      <div class="checkline"><input type="checkbox" id="newHabitWeeklyToggle"><label for="newHabitWeeklyToggle">Weekly goal habit (custom target)</label></div>
+      <div class="field" id="weeklyTargetField" style="display:none;"><label class="field-label">Target per week</label><input type="number" id="newHabitWeeklyTarget" value="4" min="1" max="7"></div>
+      <button class="btn green full" id="addHabitBtn">Add Habit</button>
+    </div>
+    <div class="card">
+      <span class="tag">🌐 host this on your phone</span>
+      <p style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); line-height:1.7;">
+        Your data already autosaves to this account — reopen this same chat/artifact link on your phone and it's all there.<br><br>
+        To use it like an app daily: open this page in your phone's browser, then use <b>Share → Add to Home Screen</b> (iOS Safari) or <b>⋮ → Add to Home screen</b> (Android Chrome). It'll launch full-screen with an icon, no browser bar.
+      </p>
+    </div>
+  </section>
+
+  <nav class="bottom-nav">
+    <button data-screen="home" class="active"><span class="ic">✅</span>Home</button>
+    <button data-screen="gym"><span class="ic">🏋️</span>Gym</button>
+    <button data-screen="weight"><span class="ic">⚖️</span>Weight</button>
+    <button data-screen="journal"><span class="ic">📓</span>Journal</button>
+    <button data-screen="progress"><span class="ic">🏆</span>Progress</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DAYS = 31;
+const WD_LABELS = ['M','T','W','T','F','S','S'];
+let state = { habits:[], checks:{}, weight:{}, journal:{}, gymLog:{}, routines:[], weeklyTodos:[] };
+let selectedDay = 1;
+let currentJournalDay = 1;
+let weightChart = null;
+let saveTimer = null;
+
+function uid(){ return 'h' + Math.random().toString(36).slice(2,9); }
+
+async function loadState(){
+  try{
+    if (typeof window.storage !== 'undefined' && typeof window.storage.get === 'function') {
+      const res = await window.storage.get('clay-tracker-data', false);
+      if(res && res.value) state = Object.assign(state, JSON.parse(res.value));
+    } else {
+      const val = localStorage.getItem('clay-tracker-data');
+      if(val) state = Object.assign(state, JSON.parse(val));
+    }
+  }catch(e){
+    console.error("Error loading state:", e);
+  }
+  
+  if(!state.habits || state.habits.length===0){
+    state.habits = [
+      {id:uid(), name:'Sleep 7+ hrs', color:'#A9D6B8'},
+      {id:uid(), name:'Drink water', color:'#F0B27E'},
+      {id:uid(), name:'Read 20 min', color:'#C7B8E8'},
+    ];
+  }
+  if(!state.checks) state.checks = {};
+  if(!state.weight) state.weight = {};
+  if(!state.journal) state.journal = {};
+  if(!state.gymLog) state.gymLog = {};
+  if(!state.weeklyTodos) state.weeklyTodos = [];
+  if(!state.routines) state.routines = [
+    {id:uid(), name:'Push Day', text:'Bench press, overhead press, dips, triceps pushdowns'},
+    {id:uid(), name:'Pull Day', text:'Deadlift, rows, pull-ups, bicep curls'},
+    {id:uid(), name:'Leg Day', text:'Squats, lunges, leg press, calf raises'},
+  ];
+}
+
+async function persist(){
+  const status = document.getElementById('saveStatus');
+  try{
+    if (typeof window.storage !== 'undefined' && typeof window.storage.set === 'function') {
+      await window.storage.set('clay-tracker-data', JSON.stringify(state), false);
+    } else {
+      localStorage.setItem('clay-tracker-data', JSON.stringify(state));
+    }
+    if(status) status.textContent = 'saved to this device';
+  }catch(e){
+    if(status) status.textContent = 'save failed — check connection';
+  }
+}
+
+function debouncedPersist(){
+  const status = document.getElementById('saveStatus');
+  if(status) status.textContent = 'saving…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persist, 350);
+}
+
+/* ---------- WEEK/DAY HELPERS ---------- */
+function getWeekForDay(day) {
+  if (day <= 7) return 1;
+  if (day <= 14) return 2;
+  if (day <= 21) return 3;
+  if (day <= 28) return 4;
+  return 5;
+}
+
+function getFirstIncompleteDay() {
+  if (state.habits.length === 0) return 1;
+  for (let d = 1; d <= DAYS; d++) {
+    if (dailyPct(d) < 100) {
+      return d;
+    }
+  }
+  return 1;
+}
+
+/* ---------- STATS ---------- */
+function dailyPct(day){ 
+  if(state.habits.length===0) return 0; 
+  let c=0; 
+  state.habits.forEach(h=>{ 
+    if(state.checks[h.id+'_'+day]) c++; 
+  }); 
+  return Math.round((c/state.habits.length)*100); 
+}
+
+function habitMonthlyPct(h){ 
+  let c=0; 
+  for(let d=1; d<=DAYS; d++){ 
+    if(state.checks[h.id+'_'+d]) c++; 
+  } 
+  return Math.round((c/DAYS)*100); 
+}
+
+function totalChecks(){ 
+  let c=0; 
+  state.habits.forEach(h=>{ 
+    for(let d=1; d<=DAYS; d++){ 
+      if(state.checks[h.id+'_'+d]) c++; 
+    } 
+  }); 
+  return c; 
+}
+
+function gymDaysCount(){ 
+  return Object.values(state.gymLog).filter(Boolean).length; 
+}
+
+function perfectDaysCount(){ 
+  let c=0; 
+  for(let d=1; d<=DAYS; d++){ 
+    if(state.habits.length && dailyPct(d)===100) c++; 
+  } 
+  return c; 
+}
+
+function computeXP(){ 
+  return totalChecks()*10 + perfectDaysCount()*25 + gymDaysCount()*8; 
+}
+
+function computeLevel(xp){ 
+  const per=150; 
+  return {level:Math.floor(xp/per)+1, into:xp%per, per}; 
+}
+
+function overallStreak(){
+  if (state.habits.length === 0) return 0;
+  let streak = 0;
+  for (let d = 1; d <= DAYS; d++) {
+    if (dailyPct(d) === 100) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function habitStreak(h){
+  let streak = 0;
+  for (let d = 1; d <= DAYS; d++) {
+    if (state.checks[h.id + '_' + d]) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function weeksForHabit(h) {
+  const weeks = [];
+  for (let w = 1; w <= 5; w++) {
+    const startDay = (w - 1) * 7 + 1;
+    const endDay = Math.min(31, w * 7);
+    let count = 0;
+    for (let d = startDay; d <= endDay; d++) {
+      if (state.checks[h.id + '_' + d]) count++;
+    }
+    weeks.push({ weekNum: w, startDay, endDay, count });
+  }
+  return weeks;
+}
+
+function anyWeeklyTargetMet(){ 
+  return state.habits.some(h=>{ 
+    if(!h.weeklyTarget) return false; 
+    return weeksForHabit(h).some(w=>w.count>=h.weeklyTarget); 
+  }); 
+}
+
+/* ---------- TOAST + CONFETTI ---------- */
+function toast(msg){ 
+  const el=document.getElementById('toast'); 
+  el.textContent=msg; 
+  el.classList.add('show'); 
+  setTimeout(()=>el.classList.remove('show'),1600); 
+}
+
+function confettiBurst(){
+  const colors=['#F4D06F','#F2A6B0','#9FC0E8','#A9D6B8','#C7B8E8','#F0B27E'];
+  for(let i=0;i<26;i++){
+    const p=document.createElement('div'); p.className='confetti-piece';
+    p.style.left=(Math.random()*100)+'vw'; p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    p.style.animation=`fall ${0.9+Math.random()*0.8}s ease-in forwards`;
+    p.style.borderRadius = Math.random()>0.5 ? '50%':'4px';
+    document.body.appendChild(p); setTimeout(()=>p.remove(),2000);
+  }
+}
+
+/* ---------- HEADER ---------- */
+function renderHeader(){
+  const xp=computeXP(); const {level,into,per}=computeLevel(xp);
+  document.getElementById('levelBadge').textContent=level;
+  document.getElementById('xpText').textContent=xp+' XP';
+  document.getElementById('xpNext').textContent=(per-into)+' to next lvl';
+  document.getElementById('xpFill').style.width=Math.round((into/per)*100)+'%';
+  document.getElementById('streakVal').textContent=overallStreak();
+}
+
+/* ---------- NAV ---------- */
+document.querySelectorAll('.bottom-nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('screen-'+btn.dataset.screen).classList.add('active');
+    if(btn.dataset.screen==='gym'){ renderGym(); renderRoutines(); }
+    if(btn.dataset.screen==='weight') renderWeight();
+    if(btn.dataset.screen==='journal') renderJournal();
+    if(btn.dataset.screen==='progress'){ renderBadges(); renderCalendars(); renderHabitManage(); }
+  });
+});
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  document.getElementById('dayNum').textContent='DAY '+selectedDay;
+  document.getElementById('dayDate').textContent='Week ' + getWeekForDay(selectedDay);
+  const pct=dailyPct(selectedDay);
+  document.getElementById('dayRing').style.setProperty('--p', pct);
+  document.getElementById('dayPctText').textContent=pct+'%';
+  const doneCount=state.habits.filter(h=>state.checks[h.id+'_'+selectedDay]).length;
+  document.getElementById('dayFraction').textContent=doneCount+' / '+state.habits.length+' habits';
+
+  const list=document.getElementById('habitList'); const noNote=document.getElementById('noHabitsNote');
+  list.innerHTML='';
+  if(state.habits.length===0){ noNote.style.display='block'; return; }
+  noNote.style.display='none';
+
+  state.habits.forEach(h=>{
+    const done=!!state.checks[h.id+'_'+selectedDay];
+    const card=document.createElement('div');
+    card.className='habit-card'+(done?' done':'');
+    let weekChip='';
+    if(h.weeklyTarget){
+      const weeks=weeksForHabit(h); 
+      const w = getWeekForDay(selectedDay);
+      const thisWeek=weeks.find(x=>x.weekNum===w); 
+      const cnt=thisWeek?thisWeek.count:0;
+      weekChip=`<span class="week-chip ${cnt>=h.weeklyTarget?'met':''}">Wk: ${cnt}/${h.weeklyTarget}</span>`;
+    }
+    card.innerHTML=`
+      <button class="checkbox-btn">${done?'✓':''}</button>
+      <div class="habit-info">
+        <div class="name"><span class="dot" style="background:${h.color};border:1px solid var(--ink);"></span>${escapeHtml(h.name)}</div>
+        <div class="meta"><span class="flame">🔥${habitStreak(h)}</span><span>${habitMonthlyPct(h)}% this month</span>${weekChip}</div>
+      </div>`;
+    card.querySelector('.checkbox-btn').addEventListener('click', ()=>{
+      const key=h.id+'_'+selectedDay;
+      const wasComplete=state.habits.length && dailyPct(selectedDay)===100;
+      state.checks[key]=!state.checks[key];
+      const nowComplete=dailyPct(selectedDay)===100;
+      renderHome(); renderHeader(); debouncedPersist();
+      if(!wasComplete && nowComplete){ confettiBurst(); toast('🎉 Day '+selectedDay+' complete! +25 bonus XP'); }
+    });
+    list.appendChild(card);
+  });
+}
+document.getElementById('prevDay').addEventListener('click', ()=>{ if(selectedDay>1){ selectedDay--; renderHome(); } });
+document.getElementById('nextDay').addEventListener('click', ()=>{ if(selectedDay<DAYS){ selectedDay++; renderHome(); } });
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+/* ---------- GYM (full 4-week grid + weekly-target habits) ---------- */
+function renderGym(){
+  const wrap=document.getElementById('gymContent');
+  wrap.innerHTML='';
+
+  for (let w = 1; w <= 4; w++) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    let labels = '';
+    let boxes = '';
+    
+    for (let i = 0; i < 7; i++) {
+      labels += `<div class="wd-label">${WD_LABELS[i]}</div>`;
+      
+      const key = `w${w}_d${i}`;
+      const on = !!state.gymLog[key];
+      boxes += `<button class="gym-day-btn ${on ? 'on' : ''}" data-key="${key}">${i + 1}</button>`;
+    }
+    
+    let count = 0;
+    for (let i = 0; i < 7; i++) {
+      if (state.gymLog[`w${w}_d${i}`]) count++;
+    }
+
+    card.innerHTML = `
+      <span class="tag" style="background:var(--blue);">🏋️ Week ${w}</span>
+      <div class="week-days-grid">${labels}</div>
+      <div class="week-days-grid">${boxes}</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--sub); margin-top:6px; font-weight:700;">
+        ${count} day${count === 1 ? '' : 's'} trained this week
+      </div>
+    `;
+    
+    wrap.appendChild(card);
+    
+    card.querySelectorAll('.gym-day-btn').forEach(btn => {
+      btn.onclick = () => {
+        const key = btn.dataset.key;
+        state.gymLog[key] = !state.gymLog[key];
+        renderGym();
+        renderHeader();
+        debouncedPersist();
+        if (state.gymLog[key]) toast('💪 Workout logged!');
+      };
+    });
+  }
+
+  // Weekly-target habits (custom goal habits) still shown for reference
+  const targets = state.habits.filter(h=>h.weeklyTarget);
+  if(targets.length){
+    const divider=document.createElement('div');
+    divider.innerHTML = `<span class="tag" style="padding-left:16px; display:block; margin:6px 0; background:var(--pink);">🎯 other weekly goal habits</span>`;
+    wrap.appendChild(divider);
+    targets.forEach(h=>{
+      const card=document.createElement('div'); card.className='card';
+      const weeks=weeksForHabit(h); 
+      let weeksHtml='';
+      weeks.forEach(w=>{
+        const met=w.count>=h.weeklyTarget;
+        weeksHtml += `
+          <div class="week-block ${met?'met':''}" style="margin-bottom: 8px; padding: 10px;">
+            <div class="wtitle">
+              <span>Week ${w.weekNum} (Days ${w.startDay}-${w.endDay})</span>
+              <span>${w.count}/${h.weeklyTarget}${met?' ✓':''}</span>
+            </div>
+          </div>`;
+      });
+      card.innerHTML = `<span class="tag" style="background:${h.color};color:var(--ink);">${escapeHtml(h.name)}</span><h2 style="font-size:15px; margin-bottom:8px;">${habitMonthlyPct(h)}% of days hit</h2>${weeksHtml}`;
+      wrap.appendChild(card);
+    });
+  }
+}
+
+/* ---------- ROUTINES ---------- */
+function renderRoutines(){
+  const wrap=document.getElementById('routineList');
+  wrap.innerHTML='';
+  state.routines.forEach(r=>{
+    const card=document.createElement('div'); card.className='routine-card';
+    card.innerHTML = `
+      <div class="routine-head">
+        <input type="text" value="${escapeAttr(r.name)}" data-id="${r.id}" class="routine-name">
+        <span class="rm" data-rm="${r.id}">✕</span>
+      </div>
+      <textarea data-id="${r.id}" class="routine-text" placeholder="Exercises, sets, reps…">${escapeHtml(r.text||'')}</textarea>`;
+    wrap.appendChild(card);
+  });
+  wrap.querySelectorAll('.routine-name').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const r=state.routines.find(x=>x.id===e.target.dataset.id);
+      if(r){ r.name=e.target.value; debouncedPersist(); }
+    });
+  });
+  wrap.querySelectorAll('.routine-text').forEach(ta=>{
+    ta.addEventListener('input', e=>{
+      const r=state.routines.find(x=>x.id===e.target.dataset.id);
+      if(r){ r.text=e.target.value; debouncedPersist(); }
+    });
+  });
+  wrap.querySelectorAll('[data-rm]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      state.routines = state.routines.filter(x=>x.id!==el.dataset.rm);
+      renderRoutines(); debouncedPersist();
+    });
+  });
+}
+function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+document.getElementById('addRoutineBtn').addEventListener('click', ()=>{
+  state.routines.push({id:uid(), name:'New Routine', text:''});
+  renderRoutines(); debouncedPersist();
+});
+
+/* ---------- WEIGHT ---------- */
+function populateWeightDaySelect(){
+  const sel=document.getElementById('weightDay'); sel.innerHTML='';
+  for(let d=1; d<=DAYS; d++){ const o=document.createElement('option'); o.value=d; o.textContent='Day '+d; sel.appendChild(o); }
+  sel.value=selectedDay;
+}
+document.getElementById('saveWeightBtn').addEventListener('click', ()=>{
+  const day=document.getElementById('weightDay').value;
+  const val=parseFloat(document.getElementById('weightValue').value);
+  if(isNaN(val)) return;
+  state.weight[day]=val;
+  document.getElementById('weightValue').value='';
+  renderWeight(); debouncedPersist();
+  toast('⚖️ Weight logged for Day '+day);
+});
+function renderWeight(){
+  const entries=[];
+  for(let d=1; d<=DAYS; d++){ if(state.weight[d]!==undefined) entries.push({day:d, val:state.weight[d]}); }
+  document.getElementById('statLogged').textContent=entries.length+'/'+DAYS;
+  if(entries.length){
+    document.getElementById('statStart').textContent=entries[0].val;
+    document.getElementById('statCurrent').textContent=entries[entries.length-1].val;
+    const diff=(entries[entries.length-1].val-entries[0].val).toFixed(1);
+    document.getElementById('statChange').textContent=(diff>0?'+':'')+diff;
+  } else {
+    document.getElementById('statStart').textContent='–'; document.getElementById('statCurrent').textContent='–'; document.getElementById('statChange').textContent='–';
+  }
+  const labels=[], data=[];
+  for(let d=1; d<=DAYS; d++){ labels.push(d); data.push(state.weight[d]!==undefined?state.weight[d]:null); }
+  const ctx=document.getElementById('weightChart').getContext('2d');
+  if(weightChart) weightChart.destroy();
+  weightChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{ label:'Weight (kg)', data, spanGaps:true, borderColor:'#3E3A34', borderWidth:3,
+      backgroundColor:'#F4D06F', pointBackgroundColor:'#F2A6B0', pointBorderColor:'#3E3A34', pointBorderWidth:2, pointRadius:4, tension:0.3, fill:true }] },
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'#ded9cc'}}, y:{grid:{color:'#ded9cc'}} } }
+  });
+}
+
+/* ---------- JOURNAL ---------- */
+function renderJournalDays(){
+  const wrap=document.getElementById('journalDays'); wrap.innerHTML='';
+  for(let d=1; d<=DAYS; d++){
+    const btn=document.createElement('button'); btn.textContent=d;
+    if(state.journal[d] && state.journal[d].trim()) btn.classList.add('has');
+    if(d===currentJournalDay) btn.classList.add('active');
+    btn.addEventListener('click', ()=>{ currentJournalDay=d; renderJournalDays(); document.getElementById('journalText').value=state.journal[d]||''; });
+    wrap.appendChild(btn);
+  }
+}
+function renderJournal(){ renderJournalDays(); document.getElementById('journalText').value=state.journal[currentJournalDay]||''; }
+document.getElementById('journalText').addEventListener('input', e=>{ state.journal[currentJournalDay]=e.target.value; renderJournalDays(); debouncedPersist(); });
+
+/* ---------- BADGES ---------- */
+function getBadges(){
+  const xp=computeXP(); const {level}=computeLevel(xp); const streak=overallStreak();
+  const journalDays=Object.values(state.journal).filter(v=>v&&v.trim()).length;
+  const weightDays=Object.keys(state.weight).length;
+  return [
+    {ic:'👣', lb:'First Step', on: totalChecks()>0 || gymDaysCount()>0},
+    {ic:'🔥', lb:'3-Day Streak', on: streak>=3},
+    {ic:'⚡', lb:'7-Day Streak', on: streak>=7},
+    {ic:'🏋️', lb:'4x Gym Week', on: [1,2,3,4].some(w => {
+      let count = 0;
+      for (let i = 0; i < 7; i++) {
+        if (state.gymLog[`w${w}_d${i}`]) count++;
+      }
+      return count >= 4;
+    })},
+    {ic:'🦍', lb:'Gym Beast', on: gymDaysCount()>=12 || anyWeeklyTargetMet()},
+    {ic:'⭐', lb:'Level 5', on: level>=5},
+    {ic:'📓', lb:'Journal x5', on: journalDays>=5},
+    {ic:'⚖️', lb:'Weigh-in x10', on: weightDays>=10},
+    {ic:'💯', lb:'Perfect Day', on: perfectDaysCount()>=1},
+  ];
+}
+function renderBadges(){
+  const grid=document.getElementById('badgeGrid'); grid.innerHTML='';
+  getBadges().forEach(b=>{
+    const el=document.createElement('div'); el.className='badge'+(b.on?' unlocked':'');
+    el.innerHTML=`<span class="ic">${b.on?b.ic:'🔒'}</span><span class="lb">${b.lb}</span>`;
+    grid.appendChild(el);
+  });
+}
+
+/* ---------- CALENDARS ---------- */
+function renderCalendars(){
+  const wrap=document.getElementById('calWrap');
+  if(state.habits.length===0){ wrap.innerHTML='<div class="empty-note">No habits yet.</div>'; return; }
+  wrap.innerHTML='';
+  state.habits.forEach(h=>{
+    const box=document.createElement('div'); box.style.marginBottom='16px';
+    let days='';
+    for(let d=1; d<=DAYS; d++){
+      const done=!!state.checks[h.id+'_'+d];
+      days += `<div class="d" style="${done?`background:${h.color};color:var(--ink);font-weight:800;`:''}">${d}</div>`;
+    }
+    box.innerHTML = `<div style="font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom: 8px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${h.color};border:1px solid var(--ink);"></span>${escapeHtml(h.name)} — ${habitMonthlyPct(h)}%</div><div class="cal-boxes">${days}</div>`;
+    wrap.appendChild(box);
+  });
+}
+
+/* ---------- MANAGE HABITS ---------- */
+document.getElementById('newHabitWeeklyToggle').addEventListener('change', e=>{
+  document.getElementById('weeklyTargetField').style.display = e.target.checked ? 'block':'none';
+});
+document.getElementById('addHabitBtn').addEventListener('click', ()=>{
+  const name=document.getElementById('newHabitName').value.trim();
+  if(!name) return;
+  const color=document.getElementById('newHabitColor').value;
+  const weekly=document.getElementById('newHabitWeeklyToggle').checked;
+  const target=parseInt(document.getElementById('newHabitWeeklyTarget').value)||4;
+  const h={id:uid(), name, color};
+  if(weekly) h.weeklyTarget=target;
+  state.habits.push(h);
+  document.getElementById('newHabitName').value='';
+  document.getElementById('newHabitWeeklyToggle').checked=false;
+  document.getElementById('weeklyTargetField').style.display='none';
+  renderHabitManage(); renderHome(); renderWeeklyPlanner(); debouncedPersist();
+  toast('✅ Habit added!');
+});
+function renderHabitManage(){
+  const wrap=document.getElementById('habitManageList'); wrap.innerHTML='';
+  state.habits.forEach(h=>{
+    const row=document.createElement('div'); row.className='habit-manage-row';
+    row.innerHTML=`<span class="dot" style="background:${h.color};border:1px solid var(--ink);"></span><span class="nm">${escapeHtml(h.name)}${h.weeklyTarget?` <span style="opacity:.6;font-weight:400;">(${h.weeklyTarget}x/wk)</span>`:''}</span><span class="rm">✕</span>`;
+    row.querySelector('.rm').addEventListener('click', ()=>{
+      if(!confirm('Remove "'+h.name+'" and its check-ins?')) return;
+      state.habits = state.habits.filter(x=>x.id!==h.id);
+      Object.keys(state.checks).forEach(k=>{ if(k.startsWith(h.id+'_')) delete state.checks[k]; });
+      renderHabitManage(); renderHome(); renderWeeklyPlanner(); debouncedPersist();
+    });
+    wrap.appendChild(row);
+  });
+}
+
+/* ---------- WEEKLY PLANNER ---------- */
+function renderWeeklyPlanner() {
+  const w = getWeekForDay(selectedDay);
+  const startDay = (w - 1) * 7 + 1;
+  const endDay = Math.min(31, w * 7);
+  const weekDays = [];
+  for (let d = startDay; d <= endDay; d++) {
+    weekDays.push(d);
+  }
+
+  // 1. Render Habits Weekly Progress
+  let totalPossible = state.habits.length * weekDays.length;
+  let totalCompleted = 0;
+  state.habits.forEach(h => {
+    weekDays.forEach(d => {
+      if (state.checks[h.id + '_' + d]) {
+        totalCompleted++;
+      }
+    });
+  });
+  let pct = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+  
+  const summaryEl = document.getElementById('weekly-habits-summary');
+  summaryEl.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <span>Progress: ${pct}%</span>
+      <span>${totalCompleted} / ${totalPossible} checks</span>
+    </div>
+    <div class="xp-bar-track" style="margin-bottom: 12px; height: 16px;">
+      <div class="xp-bar-fill" style="width: ${pct}%; background: var(--green);"></div>
+    </div>
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--sub); font-weight: 500;">
+      Week ${w} (Days ${startDay}–${endDay})
+    </div>
+  `;
+
+  // 2. Render Weekly To-Dos Checklist
+  const currentWeekTodos = (state.weeklyTodos || []).filter(item => item.week === w);
+  const listEl = document.getElementById('weeklyTodoList');
+  listEl.innerHTML = '';
+  
+  if (currentWeekTodos.length === 0) {
+    listEl.innerHTML = '<div class="empty-note">No weekly tasks for this week yet. Add one below!</div>';
+  } else {
+    currentWeekTodos.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'weekly-todo-row' + (item.completed ? ' done' : '');
+      row.innerHTML = `
+        <button class="checkbox-btn-sm">${item.completed ? '✓' : ''}</button>
+        <span class="text">${escapeHtml(item.text)}</span>
+        <span class="rm" data-rm="${item.id}">✕</span>
+      `;
+      row.querySelector('.checkbox-btn-sm').addEventListener('click', () => {
+        item.completed = !item.completed;
+        renderWeeklyPlanner();
+        debouncedPersist();
+      });
+      row.querySelector('.rm').addEventListener('click', () => {
+        state.weeklyTodos = state.weeklyTodos.filter(x => x.id !== item.id);
+        renderWeeklyPlanner();
+        debouncedPersist();
+      });
+      listEl.appendChild(row);
+    });
+  }
+}
+
+document.getElementById('addWeeklyTodoBtn').onclick = () => {
+  const input = document.getElementById('newWeeklyTodoText');
+  const text = input.value.trim();
+  if (!text) return;
+  const w = getWeekForDay(selectedDay);
+  if (!state.weeklyTodos) state.weeklyTodos = [];
+  state.weeklyTodos.push({
+    id: uid(),
+    text: text,
+    completed: false,
+    week: w
+  });
+  input.value = '';
+  renderWeeklyPlanner();
+  debouncedPersist();
+  toast('📝 Weekly task added!');
+};
+
+/* ---------- INIT ---------- */
+(async function init(){
+  await loadState();
+  if(!state.weeklyTodos) state.weeklyTodos = [];
+  selectedDay = getFirstIncompleteDay();
+  currentJournalDay = selectedDay;
+  
+  // Set up daily/weekly toggle buttons
+  const btnDaily = document.getElementById('toggle-daily');
+  const btnWeekly = document.getElementById('toggle-weekly');
+  const viewDaily = document.getElementById('daily-view');
+  const viewWeekly = document.getElementById('weekly-view');
+  
+  btnDaily.onclick = () => {
+    btnDaily.classList.add('active');
+    btnWeekly.classList.remove('active');
+    viewDaily.style.display = 'block';
+    viewWeekly.style.display = 'none';
+    renderHome();
+  };
+  
+  btnWeekly.onclick = () => {
+    btnWeekly.classList.add('active');
+    btnDaily.classList.remove('active');
+    viewDaily.style.display = 'none';
+    viewWeekly.style.display = 'block';
+    renderWeeklyPlanner();
+  };
+
+  renderHeader();
+  renderHome();
+  renderWeeklyPlanner();
+  populateWeightDaySelect();
+})();
+</script>
+</body>
+</html>

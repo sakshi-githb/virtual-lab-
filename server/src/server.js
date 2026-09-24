@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import authRouter from './routes/auth.js';
 import aiRouter from './routes/ai.js';
 import experimentRouter from './routes/experiments.js';
+import physicslabRouter from './routes/physicslab/index.js';
 import connectDB from './config/db.js';
 import { initSockets } from './sockets/socketManager.js';
 
@@ -32,6 +33,7 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/experiments', experimentRouter);
+app.use('/api/physicslab', physicslabRouter);
 
 // Heartbeat health check API
 app.get('/health', (req, res) => {

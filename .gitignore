@@ -16,3 +16,7 @@ client/dist/
 .DS_Store
 Thumbs.db
 *.log
+*.zip
+*.pptx
+*.pem
+scratch/

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sakshi Dalvi | Cloud & Full Stack Developer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --accent-green: #10B981;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            line-height: 1.6;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header / Hero Section */
+        header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 40vh;
+            padding: 4rem 0 2rem 0;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, rgba(0,0,0,0) 70%);
+            top: 20px;
+            right: 10px;
+            z-index: -1;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #FFF 30%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .contact-item a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .contact-item a:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem 2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.05);
+            transform: translateY(-2px);
+        }
+
+        /* Main Grid Section */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.8rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(139,92,246,0.3);
+        }
+
+        /* Education & Projects details */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+            gap: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 0.95rem;
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        .card-date {
+            font-size: 0.85rem;
+            background-color: rgba(255,255,255,0.08);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .bullet-list {
+            margin-left: 1.2rem;
+            margin-top: 0.8rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .bullet-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Skills block */
+        .skills-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .skill-group-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-purple);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            font-size: 0.85rem;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .tag-purple {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .tag-green {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* AWS Architecture Section */
+        .aws-badge {
+            background: linear-gradient(135deg, #FF9900 0%, #FFB84D 100%);
+            color: #1A1A1A;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 5rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header / Hero Section -->
+        <header>
+            <span class="aws-badge">AWS Cloud Deployed</span>
+            <h1>Sakshi Dalvi</h1>
+            <div class="subtitle">Cloud & Full Stack Developer</div>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47L8 14l6.966-1.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/></svg>
+                    <a href="mailto:sakshi.githb@gmail.com">sakshi.githb@gmail.com</a>
+                </div>
+                <div class="contact-item">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                    <a href="https://github.com/sakshi-githb" target="_blank">github.com/sakshi-githb</a>
+                </div>
+                <div class="contact-item">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                    <span>Kolkata, India</span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="resume.pdf" class="btn btn-primary" download="Sakshi_Dalvi_Resume.pdf">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 8px;"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                    Download CV / Resume (PDF)
+                </a>
+                <a href="#projects" class="btn btn-secondary">Explore Projects</a>
+            </div>
+        </header>
+
+        <!-- Main Layout Grid -->
+        <div class="main-grid">
+            
+            <!-- Left Side: About, Experience & Projects -->
+            <div class="content-left">
+                
+                <!-- About Me -->
+                <section style="margin-bottom: 3rem;">
+                    <h2 class="section-title">About Me</h2>
+                    <p style="color: var(--text-secondary); font-size: 1.05rem;">
+                        I am a passionate Cloud & Full-Stack Developer specializing in architecting modern web experiences and deploying scalable infrastructures. With specialized training from CDAC Kolkata and a strong academic foundation in Computer Science, I design clean applications and automate delivery using AWS tools.
+                    </p>
+                </section>
+
+                <!-- Education -->
+                <section style="margin-bottom: 3rem;">
+                    <h2 class="section-title">Education</h2>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Post Graduate Diploma in Advanced Computing (PG-DAC)</div>
+                                <div class="card-subtitle">CDAC Kolkata (Centre for Development of Advanced Computing)</div>
+                            </div>
+                            <span class="card-date">Mar 2026 – Sep 2026</span>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                            Focused on Advanced Systems Development, Enterprise Java Web Services, Cloud Computing Architectures, Relational Databases, Operating Systems, and MERN deployment methodologies.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Bachelor of Technology (Computer Science & Engineering)</div>
+                                <div class="card-subtitle">CSE Graduate</div>
+                            </div>
+                            <span class="card-date">2021 – 2025</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Projects -->
+                <section id="projects" style="margin-bottom: 3rem;">
+                    <h2 class="section-title">Academic & Cloud Projects</h2>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">AWS Static Website Hosting Pipeline</div>
+                                <div class="card-subtitle">AWS Infrastructure Project</div>
+                            </div>
+                            <span class="card-date">Jul 2026</span>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                            Deployed this fully responsive developer portfolio statically on Amazon S3. 
+                        </p>
+                        <ul class="bullet-list">
+                            <li>Configured public read-access bucket policies and disabled Block Public Access rules safely.</li>
+                            <li>Applied IAM best practices by configuring MFA for Root and assigning policies to dedicated IAM Users.</li>
+                            <li>Automated file synchronizations and directory updates using the AWS CLI.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">VIRTUAL-LAB: Collaborative 2D Physics Digital Twin</div>
+                                <div class="card-subtitle">MERN Stack & WebSockets</div>
+                            </div>
+                            <span class="card-date">May 2026</span>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                            Designed a real-time collaborative digital sandbox for physics instruction and vector visualization.
+                        </p>
+                        <ul class="bullet-list">
+                            <li>Built a 60 FPS physics renderer in React using Matter.js engine bridge inside component refs.</li>
+                            <li>Developed a 30Hz network synchronizer via Socket.io with client-side linear interpolation.</li>
+                            <li>Linked RESTful Express APIs with MongoDB Atlas for sandbox save state persistence.</li>
+                        </ul>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Right Side: Skills & Architecture -->
+            <div class="content-right">
+                
+                <!-- Technical Skills -->
+                <section style="margin-bottom: 3rem;">
+                    <h2 class="section-title">Technical Skills</h2>
+                    
+                    <div class="card skills-section">
+                        <div>
+                            <div class="skill-group-title">Cloud Platforms</div>
+                            <div class="skill-tags">
+                                <span class="tag">AWS S3</span>
+                                <span class="tag">AWS EC2</span>
+                                <span class="tag">AWS IAM</span>
+                                <span class="tag">AWS CLI</span>
+                                <span class="tag">AWS VPC</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="skill-group-title">Frontend Technologies</div>
+                            <div class="skill-tags">
+                                <span class="tag tag-purple">React.js</span>
+                                <span class="tag tag-purple">Vite</span>
+                                <span class="tag tag-purple">Tailwind CSS</span>
+                                <span class="tag tag-purple">JavaScript (ES6+)</span>
+                                <span class="tag tag-purple">HTML5 & CSS3</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="skill-group-title">Backend & Database</div>
+                            <div class="skill-tags">
+                                <span class="tag tag-green">Node.js</span>
+                                <span class="tag tag-green">Express.js</span>
+                                <span class="tag tag-green">Socket.io</span>
+                                <span class="tag tag-green">MongoDB</span>
+                                <span class="tag tag-green">MySQL</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Deployed Architecture -->
+                <section style="margin-bottom: 3rem;">
+                    <h2 class="section-title">Deployment Stack</h2>
+                    <div class="card" style="padding: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 600;">AWS Services Used:</p>
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.9rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background-color: var(--accent-blue); width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></span>
+                                <span><strong>Amazon S3</strong>: Static Web Hosting</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background-color: var(--accent-purple); width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></span>
+                                <span><strong>Amazon EC2</strong>: Virtual VM Instance</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background-color: var(--accent-green); width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></span>
+                                <span><strong>AWS IAM</strong>: Access & MFA controls</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background-color: #FF9900; width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></span>
+                                <span><strong>AWS CLI</strong>: Deployment Automation</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 Sakshi Dalvi. CDAC Kolkata Certification Project.</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary);">Hosted with high availability on Amazon S3</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>
