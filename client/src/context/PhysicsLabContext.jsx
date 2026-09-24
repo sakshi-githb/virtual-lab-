@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const PhysicsLabContext = createContext(null);
 
 export const PhysicsLabProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
   const [standards, setStandards] = useState([]);
   const [topics, setTopics] = useState([]);
   const [experiments, setExperiments] = useState([
