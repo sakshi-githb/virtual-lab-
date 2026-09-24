@@ -27,7 +27,7 @@ export const SocketProvider = ({ children }) => {
     const BACKEND_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? window.location.origin : 'http://localhost:5000');
     const socketInstance = io(BACKEND_URL, {
       autoConnect: true,
-      transports: ['websocket']
+      transports: ['polling', 'websocket']
     });
 
     socketInstance.on('connect', () => {
