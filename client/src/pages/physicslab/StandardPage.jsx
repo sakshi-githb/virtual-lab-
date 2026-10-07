@@ -24,10 +24,15 @@ export default function StandardPage() {
   const topics = standardNumber === '9' ? STD_9_TOPICS : STD_10_TOPICS;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 w-full">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#1E3A5F]">Standard {standardNumber} Physics</h1>
-        <p className="text-gray-600 mt-2">Select a topic to view available experiments.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-8">
+      <div className="border-b-4 border-charcoal pb-4">
+        <span className="bg-brutalYellow border-2 border-charcoal px-3 py-1 font-mono text-xs font-black uppercase shadow-brutal-sm">
+          State Board Curriculum
+        </span>
+        <h1 className="text-3xl md:text-4xl font-black text-charcoal uppercase tracking-tight mt-3">
+          Standard {standardNumber} Physics
+        </h1>
+        <p className="text-xs font-bold text-charcoal/70 mt-1">Select a topic below to view interactive laboratory experiments.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -35,20 +40,24 @@ export default function StandardPage() {
           <Link 
             key={topic.id} 
             to={`/physicslab/topic/${topic.slug}`}
-            className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-[#1E3A5F] transition-all group flex flex-col"
+            className="card-brutal bg-white p-6 shadow-brutal hover:-translate-y-1 transition-transform flex flex-col justify-between group"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-50 text-[#1E3A5F] rounded-lg flex items-center justify-center group-hover:bg-[#1E3A5F] group-hover:text-white transition-colors">
-                <BookOpen size={24} />
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-brutalBlue text-white border-3 border-charcoal shadow-brutal-sm flex items-center justify-center font-bold">
+                  <BookOpen size={24} />
+                </div>
+                <span className="bg-cream border-2 border-charcoal px-3 py-1 font-mono text-xs font-bold uppercase">
+                  {topic.count} {topic.count === 1 ? 'Exp' : 'Exps'}
+                </span>
               </div>
-              <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
-                {topic.count} {topic.count === 1 ? 'Exp' : 'Exps'}
-              </span>
+              <h3 className="text-2xl font-black text-charcoal uppercase tracking-tight mb-2">{topic.name}</h3>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{topic.name}</h3>
-            <span className="text-[#F59E0B] font-medium text-sm mt-auto group-hover:underline">
-              View experiments &rarr;
-            </span>
+            
+            <div className="pt-4 border-t-2 border-charcoal flex items-center justify-between font-mono text-xs font-black uppercase text-charcoal group-hover:text-brutalBlue">
+              <span>View Experiments</span>
+              <span>→</span>
+            </div>
           </Link>
         ))}
       </div>

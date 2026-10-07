@@ -7,45 +7,49 @@ export default function TopicPage() {
   const { topicSlug } = useParams();
   const { experiments } = usePhysicsLab();
 
-  // In a real app we would fetch topic details. Here we just filter.
-  // Using a simplistic filter for demonstration
-  const topicExperiments = experiments.filter(e => e.topic.toLowerCase() === topicSlug.replace('-', ' '));
+  const formattedTopic = topicSlug ? topicSlug.replace(/-/g, ' ') : '';
+  const topicExperiments = experiments.filter(e => e.topic.toLowerCase().includes(formattedTopic.toLowerCase()) || formattedTopic.toLowerCase().includes(e.topic.toLowerCase()));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 w-full">
-      <div className="mb-8">
-        <Link to={-1} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#1E3A5F] mb-4">
-          <ArrowLeft size={16} className="mr-1" /> Back
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-8">
+      <div className="border-b-4 border-charcoal pb-4">
+        <Link to="/physicslab" className="btn-brutal bg-white text-xs py-1 px-3 inline-flex items-center gap-1 font-mono uppercase mb-4">
+          <ArrowLeft size={14} /> Back to Lab Home
         </Link>
-        <h1 className="text-3xl font-bold text-[#1E3A5F] capitalize">{topicSlug.replace('-', ' ')}</h1>
-        <p className="text-gray-600 mt-2">Experiments available in this topic.</p>
+        <h1 className="text-3xl md:text-4xl font-black text-charcoal uppercase tracking-tight capitalize">
+          {formattedTopic}
+        </h1>
+        <p className="text-xs font-bold text-charcoal/70 mt-1">Experiments available under this curriculum topic.</p>
       </div>
 
       {topicExperiments.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {topicExperiments.map(exp => (
-            <div key={exp.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-gray-900">{exp.title}</h3>
-                  <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded">Std {exp.standard}</span>
+            <div key={exp.id} className="card-brutal bg-white p-6 shadow-brutal flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="bg-brutalYellow border-2 border-charcoal px-2.5 py-0.5 font-mono text-[11px] font-black uppercase">
+                    Std {exp.standard}
+                  </span>
+                  <span className="bg-cream border-2 border-charcoal px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
+                    {exp.difficulty}
+                  </span>
                 </div>
-                <div className="flex gap-2 mb-6 mt-auto">
-                  <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs font-medium rounded border border-gray-200">{exp.difficulty}</span>
-                </div>
-                <Link 
-                  to={`/physicslab/experiment/${exp.slug}`}
-                  className="block w-full py-2 px-4 bg-white border border-[#1E3A5F] text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white text-center rounded-lg font-medium transition-colors"
-                >
-                  Start Experiment
-                </Link>
+                <h3 className="text-xl font-black text-charcoal uppercase leading-tight mb-4">{exp.title}</h3>
               </div>
+
+              <Link 
+                to={`/physicslab/experiment/${exp.slug}`}
+                className="btn-brutal-yellow font-black text-xs uppercase py-2.5 w-full text-center"
+              >
+                Start Experiment →
+              </Link>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-white p-8 text-center rounded-xl border border-gray-200">
-          <p className="text-gray-500">No experiments available for this topic yet.</p>
+        <div className="card-brutal bg-white p-12 text-center shadow-brutal">
+          <p className="font-mono text-xs font-bold text-charcoal/60 uppercase">No experiments currently loaded under this topic.</p>
         </div>
       )}
     </div>

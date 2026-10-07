@@ -7,102 +7,108 @@ export default function PhysicsLabHome() {
   const { experiments } = usePhysicsLab();
 
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#1E3A5F] to-indigo-900 text-white py-20 px-4">
-        <div className="max-w-5xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
-            Explore Physics. Perform Experiments. Understand the Science.
-          </h1>
-          <p className="text-xl text-blue-100 mb-10 max-w-3xl mx-auto leading-relaxed">
-            A Virtual Physics Laboratory for Maharashtra State Board students.
-            Conduct interactive simulations right from your browser.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              to="/physicslab/standard/9" 
-              className="px-8 py-4 bg-white text-[#1E3A5F] rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              Explore Standard 9
-            </Link>
-            <Link 
-              to="/physicslab/standard/10" 
-              className="px-8 py-4 bg-[#F59E0B] text-white rounded-lg font-bold text-lg hover:bg-amber-400 transition-colors shadow-lg"
-            >
-              Explore Standard 10
-            </Link>
-          </div>
+    <div className="flex flex-col gap-10 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      {/* Hero Poster Banner */}
+      <section className="bg-brutalYellow border-4 border-charcoal p-8 md:p-12 shadow-brutal-xl flex flex-col items-center text-center relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 notebook-grid pointer-events-none" />
+        <div className="bg-white border-3 border-charcoal px-3 py-1 text-xs font-mono font-black uppercase shadow-brutal-sm mb-4">
+          MH State Board Curriculum
+        </div>
+        <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-charcoal uppercase tracking-tight max-w-4xl leading-none mb-4">
+          Explore Physics.<br />Perform Experiments.<br />Understand Science.
+        </h1>
+        <p className="text-sm md:text-base font-bold text-charcoal/80 max-w-2xl mb-8 leading-relaxed">
+          A Virtual Physics Laboratory for Maharashtra State Board students. Conduct interactive simulations, record real observations, verify formulas, and attempt viva voce right from your browser.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 w-full max-w-md">
+          <Link 
+            to="/physicslab/standard/9" 
+            className="btn-brutal bg-white text-charcoal font-black text-sm py-3 px-6 uppercase shadow-brutal"
+          >
+            Explore Standard 9
+          </Link>
+          <Link 
+            to="/physicslab/standard/10" 
+            className="btn-brutal-blue text-white font-black text-sm py-3 px-6 uppercase shadow-brutal"
+          >
+            Explore Standard 10
+          </Link>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-[#1E3A5F] mb-12">How it works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4">
-                <BookOpen size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Learn Theory</h3>
-              <p className="text-gray-600">Read the aim, apparatus, and physics principles behind the experiment.</p>
+      <section className="space-y-6">
+        <h2 className="text-2xl font-black text-charcoal uppercase tracking-tight border-b-4 border-charcoal pb-2">
+          Experimental Workflow
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="card-brutal bg-white flex flex-col items-start p-5 gap-3">
+            <div className="w-12 h-12 bg-brutalBlue text-white border-3 border-charcoal shadow-brutal-sm flex items-center justify-center font-bold">
+              <BookOpen size={24} />
             </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-4">
-                <MousePointer2 size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Interact with Apparatus</h3>
-              <p className="text-gray-600">Use intuitive controls to adjust parameters and perform the simulation.</p>
+            <h3 className="font-extrabold text-base uppercase text-charcoal">1. Learn Theory</h3>
+            <p className="text-xs text-charcoal/80 font-medium">Read the aim, apparatus list, and physics principles behind each experiment.</p>
+          </div>
+
+          <div className="card-brutal bg-white flex flex-col items-start p-5 gap-3">
+            <div className="w-12 h-12 bg-brutalYellow text-charcoal border-3 border-charcoal shadow-brutal-sm flex items-center justify-center font-bold">
+              <MousePointer2 size={24} />
             </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-4">
-                <ClipboardList size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Record Observations</h3>
-              <p className="text-gray-600">Log your readings directly into dynamic observation tables.</p>
+            <h3 className="font-extrabold text-base uppercase text-charcoal">2. Interactive Lab</h3>
+            <p className="text-xs text-charcoal/80 font-medium">Adjust parameters, drag object positions, and inspect real-time SVG ray diagrams.</p>
+          </div>
+
+          <div className="card-brutal bg-white flex flex-col items-start p-5 gap-3">
+            <div className="w-12 h-12 bg-brutalRed text-white border-3 border-charcoal shadow-brutal-sm flex items-center justify-center font-bold">
+              <ClipboardList size={24} />
             </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle2 size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Get Your Result</h3>
-              <p className="text-gray-600">Analyze auto-generated graphs and verify your final conclusions.</p>
+            <h3 className="font-extrabold text-base uppercase text-charcoal">3. Record & Verify</h3>
+            <p className="text-xs text-charcoal/80 font-medium">Log your readings into observation tables and calculate lens formula $1/f = 1/v - 1/u$.</p>
+          </div>
+
+          <div className="card-brutal bg-white flex flex-col items-start p-5 gap-3">
+            <div className="w-12 h-12 bg-brutalGreen text-white border-3 border-charcoal shadow-brutal-sm flex items-center justify-center font-bold">
+              <CheckCircle2 size={24} />
             </div>
+            <h3 className="font-extrabold text-base uppercase text-charcoal">4. Attempt Viva</h3>
+            <p className="text-xs text-charcoal/80 font-medium">Test your conceptual knowledge with instant Viva Voce scoring and detailed explanations.</p>
           </div>
         </div>
       </section>
 
       {/* Featured Experiments */}
-      <section className="py-16 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-[#1E3A5F] mb-12">Featured Experiments</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {experiments.map(exp => (
-              <div key={exp.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                <div className="h-40 bg-gray-200 flex items-center justify-center relative">
-                  <span className="text-gray-400 font-medium">Experiment Preview</span>
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    <span className="px-2 py-1 bg-white text-xs font-bold text-[#1E3A5F] rounded shadow-sm">Std {exp.standard}</span>
-                  </div>
+      <section className="space-y-6">
+        <h2 className="text-2xl font-black text-charcoal uppercase tracking-tight border-b-4 border-charcoal pb-2">
+          Featured Experiments
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {experiments.map(exp => (
+            <div key={exp.id} className="card-brutal bg-white flex flex-col justify-between p-6 gap-4 hover:-translate-y-1 transition-transform">
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="bg-brutalYellow border-2 border-charcoal px-2.5 py-0.5 font-mono text-[11px] font-black uppercase shadow-brutal-sm">
+                    Std {exp.standard}
+                  </span>
+                  <span className="bg-cream border-2 border-charcoal px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
+                    {exp.difficulty}
+                  </span>
                 </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold text-gray-900">{exp.title}</h3>
-                  </div>
-                  <div className="flex gap-2 mb-6">
-                    <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded border border-blue-100">{exp.topic}</span>
-                    <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs font-medium rounded border border-gray-200">{exp.difficulty}</span>
-                  </div>
-                  <Link 
-                    to={`/physicslab/experiment/${exp.slug}`}
-                    className="block w-full py-2 px-4 bg-[#1E3A5F] hover:bg-opacity-90 text-white text-center rounded-lg font-medium transition-colors"
-                  >
-                    Start Experiment
-                  </Link>
-                </div>
+                <h3 className="text-xl font-black text-charcoal uppercase leading-tight mb-2">
+                  {exp.title}
+                </h3>
+                <p className="text-xs text-charcoal/70 font-medium mb-4">
+                  Topic: <strong className="text-charcoal">{exp.topic}</strong>
+                </p>
               </div>
-            ))}
-          </div>
+
+              <Link 
+                to={`/physicslab/experiment/${exp.slug}`}
+                className="btn-brutal-yellow font-black text-xs uppercase py-2.5 w-full text-center"
+              >
+                Start Experiment →
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
     </div>

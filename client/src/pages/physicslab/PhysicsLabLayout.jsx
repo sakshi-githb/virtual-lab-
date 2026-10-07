@@ -10,93 +10,108 @@ export default function PhysicsLabLayout() {
   const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
   const navLinkClasses = ({ isActive }) =>
-    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+    `px-3 py-1.5 font-mono text-xs font-black uppercase border-2 border-charcoal transition-all ${
       isActive
-        ? 'bg-amber-100 text-amber-700'
-        : 'text-gray-600 hover:bg-gray-100 hover:text-navy-900'
+        ? 'bg-brutalYellow text-charcoal shadow-brutal-sm translate-x-[1px] translate-y-[1px]'
+        : 'bg-white text-charcoal hover:bg-cream hover:-translate-y-0.5'
     }`;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-cream flex flex-col font-sans select-none relative overflow-x-hidden">
+      {/* Neo-Brutalist Top Navigation Bar */}
+      <header className="bg-white border-b-4 border-charcoal shadow-brutal-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
+          <div className="flex justify-between h-16 items-center">
+            
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <Link to="/" className="btn-brutal bg-cream text-xs py-1.5 px-3 uppercase font-black tracking-wider flex items-center gap-1.5 text-charcoal">
+                <span>← Sandbox</span>
+              </Link>
               <Link to="/physicslab" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-md bg-[#1E3A5F] flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">V</span>
+                <div className="w-9 h-9 bg-brutalYellow border-3 border-charcoal shadow-brutal-sm flex items-center justify-center font-black text-xl text-charcoal">
+                  ⚡
                 </div>
-                <span className="font-bold text-xl text-[#1E3A5F]">Virtual Physics Lab</span>
+                <span className="font-black text-xl tracking-tight text-charcoal uppercase">
+                  Physics Lab
+                </span>
               </Link>
             </div>
             
-            <nav className="hidden md:flex space-x-4 items-center">
+            {/* Desktop Navigation Links */}
+            <nav className="hidden md:flex space-x-3 items-center">
               <NavLink to="/physicslab" end className={navLinkClasses}>Home</NavLink>
-              <NavLink to="/physicslab/standard/9" className={navLinkClasses}>Standard 9</NavLink>
-              <NavLink to="/physicslab/standard/10" className={navLinkClasses}>Standard 10</NavLink>
+              <NavLink to="/physicslab/standard/9" className={navLinkClasses}>Std 9</NavLink>
+              <NavLink to="/physicslab/standard/10" className={navLinkClasses}>Std 10</NavLink>
               
               {currentUser ? (
-                <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-200">
+                <div className="flex items-center gap-3 ml-3 pl-3 border-l-2 border-charcoal">
                   <Link 
                     to={currentUser.role === 'teacher' ? '/physicslab/teacher' : '/physicslab/dashboard'}
-                    className="text-sm font-medium text-gray-700 hover:text-[#1E3A5F]"
+                    className="font-mono text-xs font-bold uppercase text-charcoal hover:underline"
                   >
                     Dashboard
                   </Link>
                   <button 
                     onClick={logout}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+                    className="btn-brutal text-xs py-1 px-3 bg-cream font-mono uppercase"
                   >
                     Logout
                   </button>
                 </div>
               ) : (
-                <div className="ml-4 pl-4 border-l border-gray-200">
+                <div className="ml-3 pl-3 border-l-2 border-charcoal">
                   <Link 
                     to="/physicslab/login"
-                    className="px-4 py-2 bg-[#1E3A5F] text-white rounded-md text-sm font-medium hover:bg-opacity-90 transition-colors"
+                    className="btn-brutal-yellow text-xs py-1.5 px-4 font-black uppercase tracking-wider"
                   >
-                    Login
+                    Member Login
                   </Link>
                 </div>
               )}
             </nav>
 
+            {/* Mobile menu button */}
             <div className="flex items-center md:hidden">
-              <button onClick={toggleMenu} className="text-gray-600 hover:text-gray-900 focus:outline-none p-2">
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              <button 
+                onClick={toggleMenu} 
+                className="bg-brutalYellow border-3 border-charcoal p-1.5 shadow-brutal-sm cursor-pointer"
+              >
+                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
             </div>
           </div>
         </div>
         
+        {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link to="/physicslab" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Home</Link>
-              <Link to="/physicslab/standard/9" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Standard 9</Link>
-              <Link to="/physicslab/standard/10" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Standard 10</Link>
-              
-              {currentUser ? (
-                <>
-                  <Link to={currentUser.role === 'teacher' ? '/physicslab/teacher' : '/physicslab/dashboard'} onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Dashboard</Link>
-                  <button onClick={() => { logout(); toggleMenu(); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Logout</button>
-                </>
-              ) : (
-                <Link to="/physicslab/login" onClick={toggleMenu} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Login</Link>
-              )}
-            </div>
+          <div className="md:hidden bg-white border-t-3 border-charcoal p-4 space-y-3">
+            <Link to="/" onClick={toggleMenu} className="block btn-brutal bg-cream text-xs py-2 text-center font-bold uppercase">← Exit to Sandbox Workspace</Link>
+            <Link to="/physicslab" onClick={toggleMenu} className="block btn-brutal bg-brutalYellow text-xs py-2 text-center font-bold uppercase">Home</Link>
+            <Link to="/physicslab/standard/9" onClick={toggleMenu} className="block btn-brutal text-xs py-2 text-center font-bold uppercase">Standard 9</Link>
+            <Link to="/physicslab/standard/10" onClick={toggleMenu} className="block btn-brutal text-xs py-2 text-center font-bold uppercase">Standard 10</Link>
+            
+            {currentUser ? (
+              <>
+                <Link to={currentUser.role === 'teacher' ? '/physicslab/teacher' : '/physicslab/dashboard'} onClick={toggleMenu} className="block btn-brutal text-xs py-2 text-center font-bold uppercase">Dashboard</Link>
+                <button onClick={() => { logout(); toggleMenu(); }} className="block w-full btn-brutal text-xs py-2 text-center font-bold uppercase">Logout</button>
+              </>
+            ) : (
+              <Link to="/physicslab/login" onClick={toggleMenu} className="block btn-brutal-yellow text-xs py-2 text-center font-bold uppercase">Login</Link>
+            )}
           </div>
         )}
       </header>
 
+      {/* Main Outlet Workspace */}
       <main className="flex-1 flex flex-col">
         <Outlet />
       </main>
       
-      <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Maharashtra State Board Virtual Physics Laboratory.
+      {/* Footer */}
+      <footer className="bg-white border-t-4 border-charcoal py-6 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center font-mono text-xs font-bold text-charcoal">
+          ⚡ Maharashtra State Board Virtual Physics Laboratory — Designed for Education
         </div>
       </footer>
     </div>
